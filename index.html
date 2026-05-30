@@ -97,7 +97,7 @@
             🔧 <strong>Funcionamiento automático:</strong><br>
             🚪 <strong>Puertas:</strong> Ancho ≤ 600mm → 1 puerta | Ancho > 600mm → 2 puertas<br>
             🧹 <strong>Excepción COLUMNA_ESCOBERO:</strong> Siempre 2 puertas de (ancho-3)mm x 1098mm<br>
-            🔩 <strong>Herrajes:</strong> Módulos de altura 700mm → 4 PATA_H15 | Altura 800mm → 4 PATA_H10
+            🔩 <strong>Herrajes:</strong> Módulos BAJOS_*, COLUMNA_* de altura 700mm → 4 PATA_H15 | Altura 800mm → 4 PATA_H10
         </div>
 
         <div class="section">
@@ -164,9 +164,9 @@
     // ===== CONFIGURACIÓN =====
     const EXCEL_URL = "https://montoyeta-star.github.io/bdestaeslabuena/modulos.xlsx";
     
-    let productosDB = [];      // Todos los módulos
-    let puertasDB = [];        // Todas las puertas del Excel
-    let herrajesDB = [];       // Todos los herrajes del Excel
+    let productosDB = [];
+    let puertasDB = [];
+    let herrajesDB = [];
     let presupuestoActual = [];
     let articuloSeleccionado = null;
 
@@ -197,7 +197,6 @@
         let anchoPuerta = anchoModulo - 3;
         let altoPuerta = altoModulo - 3;
         
-        // Excepción COLUMNA_ESCOBERO
         if (nombreModulo.includes('COLUMNA_ESCOBERO') || nombreModulo.includes('ESCOBERO')) {
             numPuertas = 2;
             anchoPuerta = anchoModulo - 3;
@@ -208,7 +207,6 @@
             anchoPuerta = (anchoModulo / 2) - 3;
         }
         
-        // Buscar puerta en la base de datos
         let puertaEncontrada = null;
         let precioPuerta = 0;
         let nombrePuerta = `Puerta ${Math.round(anchoPuerta)}x${Math.round(altoPuerta)} mm`;
@@ -243,25 +241,22 @@
             altoPuerta: Math.round(altoPuerta),
             precioPuerta: precioPuerta,
             nombrePuerta: nombrePuerta,
-            encontrada: puertaEncontrada !== null,
-            esExcepcion: nombreModulo.includes('ESCOBERO')
+            encontrada: puertaEncontrada !== null
         };
     }
 
     // ============================================================
-    // FUNCIÓN: Cálculo de herrajes (PATA_H10 / PATA_H15)
+    // FUNCIÓN CORREGIDA: Cálculo de herrajes (PATA_H10 / PATA_H15)
     // ============================================================
     function calcularHerrajes(modulo, cantidadModulos) {
         const nombreModulo = modulo.nombre.toUpperCase();
         const altoModulo = modulo.alto_mm;
         
-        // Lista de tipos de módulo que llevan patas
         const tiposConPatas = [
             'BAJOS_ALMACENAJE', 'BAJOS_FREGADERO', 'BAJO_RINCON_L',
             'COLUMNA_ESCOBERO', 'BAJO_HORNO', 'COLUMNA_HM'
         ];
         
-        // Verificar si este módulo debe llevar patas
         let llevaPatas = false;
         for (let tipo of tiposConPatas) {
             if (nombreModulo.includes(tipo)) {
@@ -272,40 +267,34 @@
         
         if (!llevaPatas) return null;
         
-        // Determinar qué pata usar según altura
         let nombreHerraje = '';
+        let precioPorDefecto = 0;
+        
         if (altoModulo === 700) {
             nombreHerraje = 'PATA_H15';
+            precioPorDefecto = 1.00;
         } else if (altoModulo === 800) {
             nombreHerraje = 'PATA_H10';
+            precioPorDefecto = 1.88;
         } else {
-            return null; // Altura no soportada para patas
+            return null;
         }
         
-        // Buscar el herraje en la base de datos
         let herrajeEncontrado = null;
-        let precioHerraje = 0;
+        let precioHerraje = precioPorDefecto;
         
         for (let herraje of herrajesDB) {
-            if (herraje.nombre === nombreHerraje) {
+            const nombreHerrajeExcel = (herraje.nombre || '').toUpperCase().trim();
+            if (nombreHerrajeExcel === nombreHerraje || nombreHerrajeExcel.includes(nombreHerraje)) {
                 herrajeEncontrado = herraje;
-                precioHerraje = herraje.precio_venta;
+                if (herraje.precio_venta > 0) {
+                    precioHerraje = herraje.precio_venta;
+                }
                 break;
             }
         }
         
-        // Si no se encontró por nombre exacto, buscar por coincidencia parcial
-        if (!herrajeEncontrado) {
-            for (let herraje of herrajesDB) {
-                if (herraje.nombre.toUpperCase().includes(nombreHerraje)) {
-                    herrajeEncontrado = herraje;
-                    precioHerraje = herraje.precio_venta;
-                    break;
-                }
-            }
-        }
-        
-        const cantidadPatas = 4 * cantidadModulos; // 4 patas por módulo
+        const cantidadPatas = 4 * cantidadModulos;
         
         return {
             nombre: nombreHerraje,
@@ -323,7 +312,6 @@
         try {
             estadoDatos.innerHTML = '📖 Descargando archivo...';
             loadingMsg.style.display = 'block';
-            loadingMsg.innerHTML = '⏳ Descargando archivo Excel...';
             
             const response = await fetch(EXCEL_URL);
             if (!response.ok) {
@@ -342,7 +330,6 @@
             herrajesDB = [];
             
             for (let item of json) {
-                // Detectar el tipo
                 let tipo = '';
                 for (let key in item) {
                     const valor = String(item[key] || '').toUpperCase();
@@ -360,17 +347,15 @@
                 
                 if (!tipo) continue;
                 
-                // Obtener precio
                 let precioVenta = 0;
                 for (let key in item) {
                     if (key.toLowerCase().includes('precio_venta') || key.toLowerCase() === 'precio_venta') {
-                        precioVenta = parseFloat(item[key]);
-                        if (isNaN(precioVenta)) precioVenta = 0;
+                        let valor = parseFloat(item[key]);
+                        if (!isNaN(valor) && valor > 0) precioVenta = valor;
                         break;
                     }
                 }
                 
-                // Obtener medidas
                 let ancho = 0, alto = 0, fondo = 0;
                 for (let key in item) {
                     const keyLower = key.toLowerCase();
@@ -379,7 +364,6 @@
                     if (keyLower === 'fondo_cm') fondo = parseFloat(item[key]) || 0;
                 }
                 
-                // Obtener categoría
                 let categoria = '';
                 for (let key in item) {
                     if (key.toLowerCase() === 'categoria') {
@@ -388,7 +372,6 @@
                     }
                 }
                 
-                // Obtener nombre
                 let nombre = '';
                 for (let key in item) {
                     if (key.toLowerCase() === 'nombre') {
@@ -397,7 +380,6 @@
                     }
                 }
                 
-                // Obtener color
                 let color = 'BLANCO';
                 for (let key in item) {
                     if (key.toLowerCase() === 'color_acabado') {
@@ -430,8 +412,6 @@
                 throw new Error('No se encontraron módulos en el archivo');
             }
             
-            console.log(`✅ Cargados: ${productosDB.length} módulos, ${puertasDB.length} puertas, ${herrajesDB.length} herrajes`);
-            
             estadoDatos.innerHTML = `✅ ${productosDB.length} módulos | ${puertasDB.length} puertas | ${herrajesDB.length} herrajes`;
             estadoDatos.className = 'status-loaded';
             loadingMsg.style.display = 'none';
@@ -443,19 +423,10 @@
             console.error('Error:', error);
             estadoDatos.innerHTML = `❌ Error: ${error.message}`;
             estadoDatos.className = 'status-not-loaded';
-            loadingMsg.innerHTML = `
-                ❌ No se pudo cargar el archivo.<br><br>
-                <strong>Error:</strong> ${error.message}<br><br>
-                <strong>Soluciones:</strong><br>
-                1. Verifica que el archivo existe en: <code>${EXCEL_URL}</code><br>
-                2. Sube tu archivo <strong>modulos.xlsx</strong> al repositorio
-            `;
+            loadingMsg.innerHTML = `❌ No se pudo cargar el archivo.<br><br>Error: ${error.message}`;
         }
     }
 
-    // ============================================================
-    // INTERFAZ DE USUARIO
-    // ============================================================
     function cargarCategorias() {
         const categorias = [...new Set(productosDB.map(p => p.categoria))];
         selectCategoria.innerHTML = '<option value="">-- Selecciona Categoría --</option>';
@@ -556,7 +527,7 @@
         const cantidadModulos = parseInt(inputCantidad.value);
         if (isNaN(cantidadModulos) || cantidadModulos <= 0) return;
         
-        // 1. Añadir el MÓDULO
+        // Módulo
         presupuestoActual.push({
             categoria: articuloSeleccionado.categoria,
             color: articuloSeleccionado.color,
@@ -568,7 +539,7 @@
             tipoFila: 'modulo'
         });
         
-        // 2. Calcular y añadir PUERTAS
+        // Puertas
         const infoPuertas = calcularPuertas(articuloSeleccionado);
         const totalPuertas = infoPuertas.numPuertas * cantidadModulos;
         
@@ -586,7 +557,7 @@
             });
         }
         
-        // 3. Calcular y añadir HERRAJES (patas)
+        // Herrajes
         const infoHerrajes = calcularHerrajes(articuloSeleccionado, cantidadModulos);
         if (infoHerrajes && infoHerrajes.cantidad > 0) {
             const avisoHerraje = !infoHerrajes.encontrado ? ' ⚠️' : '';
