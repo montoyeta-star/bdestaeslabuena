@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visor de Datos - Excel</title>
+    <title>Presupuestador de Cocinas</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,61 +13,48 @@
             min-height: 100vh;
             padding: 20px;
         }
-        /* Login */
-        .login-container {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            margin: 100px auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-        .login-container h1 { text-align: center; margin-bottom: 30px; }
-        .login-container input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        .login-container button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .error-msg { color: #e53e3e; text-align: center; margin-top: 15px; }
-        /* Main */
-        .main-container {
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
             background: white;
             border-radius: 16px;
             padding: 30px;
-            max-width: 1400px;
-            margin: 0 auto;
-            display: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #ecf0f1;
+        h1 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-bottom: 20px; }
+        h2 { color: #2c3e50; margin-bottom: 15px; font-size: 1.2rem; }
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
         }
-        h1 { color: #2c3e50; }
-        .btn-danger {
-            background-color: #e53e3e;
-            padding: 8px 16px;
-            border: none;
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #4a5568; }
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
-            color: white;
-            cursor: pointer;
+            font-size: 14px;
         }
+        button {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background-color: #2b6cb0; }
+        .btn-add { background-color: #38a169; margin-top: 22px; }
+        .btn-add:hover { background-color: #2f855a; }
+        .btn-danger { background-color: #e53e3e; }
+        .btn-danger:hover { background-color: #c53030; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #edf2f7; }
+        .total-box { text-align: right; font-size: 1.5em; margin-top: 20px; font-weight: bold; }
         .status-bar {
             background-color: #e6f7ff;
             padding: 12px 15px;
@@ -79,211 +66,376 @@
         }
         .status-loaded { color: #38a169; font-weight: bold; }
         .status-not-loaded { color: #e53e3e; font-weight: bold; }
-        .upload-area {
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-        .upload-area:hover { border-color: #3182ce; background-color: #ebf8ff; }
-        .table-container {
-            overflow-x: auto;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-        th, td {
-            padding: 10px 8px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-            border-right: 1px solid #e2e8f0;
-        }
-        th {
-            background-color: #edf2f7;
-            position: sticky;
-            top: 0;
-            font-weight: bold;
-        }
-        .stats {
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #f0fdf4;
-            border-radius: 6px;
-            color: #22543d;
-        }
-        @media print { .no-print { display: none; } }
+        .loading { text-align: center; padding: 30px; color: #3182ce; }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
-<!-- PANTALLA DE LOGIN -->
-<div id="loginPanel" class="login-container">
-    <h1>🔐 Acceso</h1>
-    <input type="text" id="loginUser" placeholder="Usuario">
-    <input type="password" id="loginPass" placeholder="Contraseña">
-    <button onclick="verificarLogin()">Entrar</button>
-    <div id="loginError" class="error-msg"></div>
-</div>
-
-<!-- PANTALLA PRINCIPAL -->
-<div id="mainPanel" class="main-container">
-    <div class="header">
-        <h1>📊 Visor de Datos - Excel</h1>
-        <button class="btn-danger" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
-    </div>
+<div class="container">
+    <h1>🏠 Presupuestador de Cocinas</h1>
 
     <div class="status-bar no-print">
-        <span>📁 Estado:</span>
-        <span id="estadoDatos" class="status-not-loaded">Sin datos cargados</span>
+        <span>📊 Estado:</span>
+        <span id="estadoDatos" class="status-not-loaded">Cargando datos...</span>
     </div>
 
-    <div id="uploadSection" class="no-print">
-        <div class="upload-area" onclick="document.getElementById('excelInput').click()">
-            📂 Haz clic para seleccionar tu archivo Excel (.xlsx)
-            <input type="file" id="excelInput" accept=".xlsx, .xls" style="display: none;">
+    <div id="loadingMsg" class="loading">⏳ Cargando archivo de productos desde GitHub...</div>
+
+    <div id="presupuestadorSection" style="display: none;">
+        <div class="section">
+            <h2>📦 1. Añadir Elemento al Presupuesto</h2>
+            <div class="grid-3">
+                <div>
+                    <label>📂 Categoría</label>
+                    <select id="selectCategoria">
+                        <option value="">-- Selecciona --</option>
+                    </select>
+                </div>
+                <div>
+                    <label>🎨 Color</label>
+                    <select id="selectColor" disabled>
+                        <option value="">-- Primero categoría --</option>
+                    </select>
+                </div>
+                <div>
+                    <label>📐 Artículo</label>
+                    <select id="selectNombre" disabled>
+                        <option value="">-- Primero color --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-3" style="margin-top: 15px;">
+                <div>
+                    <label>💰 Precio Unitario (€)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="inputPrecio" step="0.01" disabled style="flex: 1;">
+                        <button id="btnModificarPrecio" style="width: 50px;">✏️</button>
+                    </div>
+                </div>
+                <div>
+                    <label>🔢 Cantidad</label>
+                    <input type="number" id="inputCantidad" value="1" min="1">
+                </div>
+                <div>
+                    <button class="btn-add" id="btnAgregar">➕ Añadir al Presupuesto</button>
+                </div>
+            </div>
         </div>
-        <p style="font-size: 12px; color: #666; text-align: center;">
-            Selecciona tu archivo modulos.xlsx para ver los datos
-        </p>
-    </div>
 
-    <div id="dataSection" style="display: none;">
-        <div class="stats" id="stats"></div>
-        <div class="table-container">
-            <table id="dataTable">
-                <thead id="tableHeader"></thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+        <div class="section">
+            <h2>📋 2. Presupuesto</h2>
+            <div style="overflow-x: auto;">
+                <table id="tablaPresupuesto">
+                    <thead>
+                        <tr><th>Categoría</th><th>Color</th><th>Artículo</th><th>Medidas (mm)</th><th>Cant.</th><th>P.Unitario</th><th>Total</th><th></th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="total-box">💰 TOTAL: <span id="totalPrecio">0.00</span> €</div>
+            <div class="no-print" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="window.print()" style="width: auto; background-color: #4a5568;">🖨️ Imprimir / PDF</button>
+                <button id="btnReset" class="btn-danger" style="width: auto;">🗑️ Resetear Presupuesto</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // ========== LOGIN ==========
-    const USUARIO = "admin";
-    const CONTRASENA = "1234";
+    // ===== CONFIGURACIÓN =====
+    const EXCEL_URL = "https://montoyeta-star.github.io/bdestaeslabuena/modulos.xlsx";
+    
+    let productosDB = [];
+    let presupuestoActual = [];
+    let articuloSeleccionado = null;
 
-    function verificarLogin() {
-        const user = document.getElementById('loginUser').value;
-        const pass = document.getElementById('loginPass').value;
-        const errorDiv = document.getElementById('loginError');
+    // Elementos DOM
+    const estadoDatos = document.getElementById('estadoDatos');
+    const loadingMsg = document.getElementById('loadingMsg');
+    const presupuestadorSection = document.getElementById('presupuestadorSection');
+    const selectCategoria = document.getElementById('selectCategoria');
+    const selectColor = document.getElementById('selectColor');
+    const selectNombre = document.getElementById('selectNombre');
+    const inputPrecio = document.getElementById('inputPrecio');
+    const inputCantidad = document.getElementById('inputCantidad');
+    const btnModificarPrecio = document.getElementById('btnModificarPrecio');
+    const btnAgregar = document.getElementById('btnAgregar');
+    const btnReset = document.getElementById('btnReset');
+    const tablaPresupuesto = document.getElementById('tablaPresupuesto').querySelector('tbody');
+    const totalSpan = document.getElementById('totalPrecio');
 
-        if (user === USUARIO && pass === CONTRASENA) {
-            document.getElementById('loginPanel').style.display = 'none';
-            document.getElementById('mainPanel').style.display = 'block';
-            errorDiv.innerHTML = '';
-        } else {
-            errorDiv.innerHTML = '❌ Usuario o contraseña incorrectos';
+    async function cargarExcelDesdeGitHub() {
+        try {
+            estadoDatos.innerHTML = '📖 Descargando archivo...';
+            loadingMsg.style.display = 'block';
+            loadingMsg.innerHTML = '⏳ Descargando archivo Excel...';
+            
+            const response = await fetch(EXCEL_URL);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: No se encontró el archivo`);
+            }
+            
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(worksheet);
+            
+            if (json.length === 0) throw new Error('El archivo está vacío');
+            
+            console.log('Primera fila del Excel:', json[0]);
+            
+            // Procesar datos - BUSCAR LA COLUMNA CORRECTA PARA TIPO
+            productosDB = [];
+            
+            for (let item of json) {
+                // Buscar la columna que contiene "MODULO" (puede ser 'cod' o 'tipo')
+                let esModulo = false;
+                let tipoValor = '';
+                
+                // Revisar todas las columnas buscando "MODULO"
+                for (let key in item) {
+                    const valor = String(item[key] || '').toUpperCase();
+                    if (valor === 'MODULO') {
+                        esModulo = true;
+                        tipoValor = key;
+                        break;
+                    }
+                }
+                
+                if (!esModulo) continue;
+                
+                let precioVenta = 0;
+                // Buscar precio_venta en cualquier columna
+                for (let key in item) {
+                    if (key.toLowerCase().includes('precio_venta') || key.toLowerCase() === 'precio_venta') {
+                        precioVenta = parseFloat(item[key]);
+                        if (isNaN(precioVenta)) precioVenta = 0;
+                        break;
+                    }
+                }
+                
+                let ancho = 0, alto = 0, fondo = 0;
+                for (let key in item) {
+                    const keyLower = key.toLowerCase();
+                    if (keyLower === 'ancho_cm') ancho = parseFloat(item[key]) || 0;
+                    if (keyLower === 'alto_cm') alto = parseFloat(item[key]) || 0;
+                    if (keyLower === 'fondo_cm') fondo = parseFloat(item[key]) || 0;
+                }
+                
+                let categoria = '';
+                for (let key in item) {
+                    if (key.toLowerCase() === 'categoria') {
+                        categoria = String(item[key] || '').trim();
+                        break;
+                    }
+                }
+                
+                let nombre = '';
+                for (let key in item) {
+                    if (key.toLowerCase() === 'nombre') {
+                        nombre = String(item[key] || '').trim();
+                        break;
+                    }
+                }
+                
+                let color = 'BLANCO';
+                for (let key in item) {
+                    if (key.toLowerCase() === 'color_acabado') {
+                        color = String(item[key] || 'BLANCO').trim().toUpperCase();
+                        break;
+                    }
+                }
+                
+                if (categoria && nombre) {
+                    productosDB.push({
+                        categoria: categoria,
+                        color: color,
+                        nombre: nombre,
+                        alto_mm: alto,
+                        ancho_mm: ancho,
+                        fondo_mm: fondo,
+                        precio_venta: precioVenta
+                    });
+                }
+            }
+            
+            if (productosDB.length === 0) {
+                throw new Error('No se encontraron módulos. Revisa que la columna tenga "MODULO"');
+            }
+            
+            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos cargados automáticamente`;
+            estadoDatos.className = 'status-loaded';
+            loadingMsg.style.display = 'none';
+            presupuestadorSection.style.display = 'block';
+            
+            cargarCategorias();
+            
+        } catch (error) {
+            console.error('Error:', error);
+            estadoDatos.innerHTML = `❌ Error: ${error.message}`;
+            estadoDatos.className = 'status-not-loaded';
+            loadingMsg.innerHTML = `
+                ❌ No se pudo cargar el archivo.<br><br>
+                <strong>Error:</strong> ${error.message}<br><br>
+                <strong>Soluciones:</strong><br>
+                1. Verifica que el archivo existe en: <code>${EXCEL_URL}</code><br>
+                2. Sube tu archivo <strong>modulos.xlsx</strong> al repositorio<br>
+                3. Asegúrate de que el archivo tenga una fila con "MODULO" en alguna columna
+            `;
         }
     }
 
-    function cerrarSesion() {
-        document.getElementById('mainPanel').style.display = 'none';
-        document.getElementById('loginPanel').style.display = 'block';
-        document.getElementById('loginUser').value = '';
-        document.getElementById('loginPass').value = '';
-        document.getElementById('estadoDatos').innerHTML = 'Sin datos cargados';
-        document.getElementById('estadoDatos').className = 'status-not-loaded';
-        document.getElementById('dataSection').style.display = 'none';
-        document.getElementById('uploadSection').style.display = 'block';
+    function cargarCategorias() {
+        const categorias = [...new Set(productosDB.map(p => p.categoria))];
+        selectCategoria.innerHTML = '<option value="">-- Selecciona Categoría --</option>';
+        categorias.forEach(cat => {
+            selectCategoria.innerHTML += `<option value="${cat}">${cat}</option>`;
+        });
+        selectCategoria.disabled = false;
+        resetColorYNombre();
     }
 
-    // ========== CARGA Y VISUALIZACIÓN DEL EXCEL ==========
-    const excelInput = document.getElementById('excelInput');
-    const estadoDatos = document.getElementById('estadoDatos');
-    const uploadSection = document.getElementById('uploadSection');
-    const dataSection = document.getElementById('dataSection');
-    const tableHeader = document.getElementById('tableHeader');
-    const tableBody = document.getElementById('tableBody');
-    const statsDiv = document.getElementById('stats');
+    function resetColorYNombre() {
+        selectColor.innerHTML = '<option value="">-- Primero categoría --</option>';
+        selectColor.disabled = true;
+        selectNombre.innerHTML = '<option value="">-- Primero color --</option>';
+        selectNombre.disabled = true;
+        inputPrecio.value = '';
+        inputPrecio.disabled = true;
+        articuloSeleccionado = null;
+    }
 
-    excelInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        estadoDatos.innerHTML = '📖 Leyendo archivo...';
+    selectCategoria.addEventListener('change', () => {
+        const cat = selectCategoria.value;
+        if (!cat) { resetColorYNombre(); return; }
         
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            try {
-                const data = evt.target.result;
-                const workbook = XLSX.read(data, { type: 'binary' });
-                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-
-                if (!json || json.length === 0) {
-                    throw new Error('El archivo está vacío');
-                }
-
-                // Mostrar datos en tabla
-                mostrarTabla(json);
-                
-                estadoDatos.innerHTML = `✅ Archivo cargado: ${file.name} (${json.length-1} filas de datos)`;
-                estadoDatos.className = 'status-loaded';
-                uploadSection.style.display = 'none';
-                dataSection.style.display = 'block';
-                
-            } catch (error) {
-                console.error(error);
-                estadoDatos.innerHTML = `❌ Error: ${error.message}`;
-                estadoDatos.className = 'status-not-loaded';
-                alert('Error al leer el archivo: ' + error.message);
-            }
-        };
-        reader.readAsBinaryString(file);
+        const colores = [...new Set(productosDB.filter(p => p.categoria === cat).map(p => p.color))];
+        selectColor.innerHTML = '<option value="">-- Selecciona Color --</option>';
+        colores.forEach(col => {
+            selectColor.innerHTML += `<option value="${col}">${col}</option>`;
+        });
+        selectColor.disabled = false;
+        
+        selectNombre.innerHTML = '<option value="">-- Primero color --</option>';
+        selectNombre.disabled = true;
+        articuloSeleccionado = null;
     });
 
-    function mostrarTabla(datos) {
-        if (!datos || datos.length === 0) return;
-        
-        // Limpiar tablas
-        tableHeader.innerHTML = '';
-        tableBody.innerHTML = '';
-        
-        // Cabeceras (primera fila)
-        const headers = datos[0];
-        const headerRow = document.createElement('tr');
-        for (let i = 0; i < headers.length; i++) {
-            const th = document.createElement('th');
-            th.textContent = headers[i] || `Columna ${i+1}`;
-            headerRow.appendChild(th);
+    selectColor.addEventListener('change', () => {
+        const cat = selectCategoria.value;
+        const col = selectColor.value;
+        if (!cat || !col) {
+            selectNombre.disabled = true;
+            return;
         }
-        tableHeader.appendChild(headerRow);
         
-        // Datos (resto de filas)
-        let filasConDatos = 0;
-        for (let i = 1; i < datos.length; i++) {
-            const row = datos[i];
-            // Verificar si la fila tiene algún dato relevante
-            const tieneDatos = row.some(cell => cell && cell.toString().trim() !== '');
-            if (!tieneDatos) continue;
-            
-            filasConDatos++;
-            const tr = document.createElement('tr');
-            for (let j = 0; j < headers.length; j++) {
-                const td = document.createElement('td');
-                let valor = row[j];
-                if (valor === undefined || valor === null) valor = '';
-                td.textContent = valor;
-                tr.appendChild(td);
+        const items = productosDB.filter(p => p.categoria === cat && p.color === col);
+        selectNombre.innerHTML = '<option value="">-- Selecciona Artículo --</option>';
+        items.forEach(item => {
+            selectNombre.innerHTML += `<option value="${item.nombre}" 
+                data-alto="${item.alto_mm}" 
+                data-ancho="${item.ancho_mm}"
+                data-fondo="${item.fondo_mm}">
+                ${item.nombre} (${item.ancho_mm}×${item.alto_mm}×${item.fondo_mm} mm) - ${item.precio_venta.toFixed(2)}€
+            </option>`;
+        });
+        selectNombre.disabled = false;
+    });
+
+    selectNombre.addEventListener('change', () => {
+        const cat = selectCategoria.value;
+        const col = selectColor.value;
+        const nombre = selectNombre.value;
+        const selectedOption = selectNombre.options[selectNombre.selectedIndex];
+        
+        if (!nombre) {
+            articuloSeleccionado = null;
+            return;
+        }
+        
+        articuloSeleccionado = productosDB.find(p => 
+            p.categoria === cat && p.color === col && p.nombre === nombre
+        );
+        
+        if (articuloSeleccionado && selectedOption) {
+            articuloSeleccionado.alto_mm = parseInt(selectedOption.dataset.alto) || articuloSeleccionado.alto_mm;
+            articuloSeleccionado.ancho_mm = parseInt(selectedOption.dataset.ancho) || articuloSeleccionado.ancho_mm;
+            inputPrecio.value = articuloSeleccionado.precio_venta;
+            inputPrecio.disabled = false;
+        }
+    });
+
+    btnModificarPrecio.addEventListener('click', () => {
+        if (articuloSeleccionado) {
+            const np = parseFloat(inputPrecio.value);
+            if (!isNaN(np) && np >= 0) {
+                articuloSeleccionado.precio_venta = np;
+                alert('✅ Precio modificado para esta sesión');
             }
-            tableBody.appendChild(tr);
+        }
+    });
+
+    btnAgregar.addEventListener('click', () => {
+        if (!articuloSeleccionado) {
+            alert('❌ Selecciona un artículo primero');
+            return;
         }
         
-        // Actualizar estadísticas
-        statsDiv.innerHTML = `
-            📊 <strong>Resumen:</strong> 
-            ${headers.length} columnas | 
-            ${filasConDatos} filas de datos
-        `;
+        const cantidad = parseInt(inputCantidad.value);
+        if (isNaN(cantidad) || cantidad <= 0) return;
+        
+        presupuestoActual.push({
+            categoria: articuloSeleccionado.categoria,
+            color: articuloSeleccionado.color,
+            nombre: articuloSeleccionado.nombre,
+            medidas: `${articuloSeleccionado.ancho_mm}×${articuloSeleccionado.alto_mm}×${articuloSeleccionado.fondo_mm} mm`,
+            cantidad: cantidad,
+            precioUnitario: articuloSeleccionado.precio_venta,
+            total: cantidad * articuloSeleccionado.precio_venta
+        });
+        
+        actualizarTablaPresupuesto();
+        inputCantidad.value = 1;
+    });
+
+    btnReset.addEventListener('click', () => {
+        if (confirm('¿Resetear todo el presupuesto?')) {
+            presupuestoActual = [];
+            actualizarTablaPresupuesto();
+        }
+    });
+
+    function actualizarTablaPresupuesto() {
+        tablaPresupuesto.innerHTML = '';
+        let total = 0;
+        
+        presupuestoActual.forEach((item, idx) => {
+            total += item.total;
+            tablaPresupuesto.innerHTML += `
+                <tr>
+                    <td>${item.categoria}</td>
+                    <td>${item.color}</td>
+                    <td>${item.nombre}</td>
+                    <td>${item.medidas}</td>
+                    <td>${item.cantidad}</td>
+                    <td>${item.precioUnitario.toFixed(2)}€</p>
+                    <td><b>${item.total.toFixed(2)}€</b></td>
+                    <td><button onclick="eliminarElemento(${idx})" style="background:#e53e3e; padding:5px 8px; width:auto;">🗑️</button></td>
+                </tr>
+            `;
+        });
+        
+        totalSpan.innerText = total.toFixed(2);
     }
+
+    window.eliminarElemento = (idx) => {
+        presupuestoActual.splice(idx, 1);
+        actualizarTablaPresupuesto();
+    };
+
+    cargarExcelDesdeGitHub();
 </script>
 </body>
 </html>
