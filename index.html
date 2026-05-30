@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presupuestador de Cocinas</title>
+    <title>Presupuestador de Cocinas - Con Puertas Automáticas</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -67,6 +67,15 @@
         .status-loaded { color: #38a169; font-weight: bold; }
         .status-not-loaded { color: #e53e3e; font-weight: bold; }
         .loading { text-align: center; padding: 30px; color: #3182ce; }
+        .row-puerta { background-color: #f0f9ff; font-style: italic; color: #2b6cb0; }
+        .info-box {
+            background-color: #fef5e7;
+            border-left: 4px solid #f39c12;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #7d6608;
+        }
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
@@ -83,6 +92,13 @@
     <div id="loadingMsg" class="loading">⏳ Cargando archivo de productos desde GitHub...</div>
 
     <div id="presupuestadorSection" style="display: none;">
+        <div class="info-box no-print">
+            🔧 <strong>Funcionamiento:</strong> Al añadir un módulo, se añadirán automáticamente las puertas correspondientes.<br>
+            📏 Ancho ≤ 600mm → 1 puerta (ancho-3mm, alto-3mm)<br>
+            📏 Ancho > 600mm → 2 puertas [(ancho/2)-3mm, alto-3mm]<br>
+            🧹 <strong>Excepción COLUMNA_ESCOBERO:</strong> Siempre 2 puertas de (ancho-3)mm x 1098mm
+        </div>
+
         <div class="section">
             <h2>📦 1. Añadir Elemento al Presupuesto</h2>
             <div class="grid-3">
@@ -148,10 +164,10 @@
     const EXCEL_URL = "https://montoyeta-star.github.io/bdestaeslabuena/modulos.xlsx";
     
     let productosDB = [];
+    let puertasDB = [];
     let presupuestoActual = [];
     let articuloSeleccionado = null;
 
-    // Elementos DOM
     const estadoDatos = document.getElementById('estadoDatos');
     const loadingMsg = document.getElementById('loadingMsg');
     const presupuestadorSection = document.getElementById('presupuestadorSection');
@@ -165,6 +181,94 @@
     const btnReset = document.getElementById('btnReset');
     const tablaPresupuesto = document.getElementById('tablaPresupuesto').querySelector('tbody');
     const totalSpan = document.getElementById('totalPrecio');
+
+    // ============================================================
+    // FUNCIÓN CLAVE: Cálculo de puertas (CORREGIDA)
+    // ============================================================
+    function calcularPuertas(modulo) {
+        const anchoModulo = modulo.ancho_mm;
+        const altoModulo = modulo.alto_mm;
+        const colorModulo = modulo.color;
+        const nombreModulo = modulo.nombre.toUpperCase();
+        
+        let numPuertas = 1;
+        let anchoPuerta = anchoModulo - 3;
+        let altoPuerta = altoModulo - 3;
+        
+        // 🧹 EXCEPCIÓN: COLUMNA_ESCOBERO
+        if (nombreModulo.includes('COLUMNA_ESCOBERO') || nombreModulo.includes('ESCOBERO')) {
+            numPuertas = 2;
+            anchoPuerta = anchoModulo - 3;      // ← CORRECTO: ancho completo - 3 mm
+            altoPuerta = 1098;                   // Altura fija
+        }
+        // Regla general: si ancho > 600, 2 puertas (cada una ocupa la mitad del ancho)
+        else if (anchoModulo > 600) {
+            numPuertas = 2;
+            anchoPuerta = (anchoModulo / 2) - 3;
+        }
+        
+        // Buscar puerta en la base de datos que coincida con las medidas
+        let puertaEncontrada = null;
+        let precioPuerta = 0;
+        let nombrePuerta = `Puerta ${Math.round(anchoPuerta)}x${Math.round(altoPuerta)} mm`;
+        
+        // 1. Buscar por medidas exactas y mismo color
+        for (let puerta of puertasDB) {
+            const diffAncho = Math.abs(puerta.ancho_mm - anchoPuerta);
+            const diffAlto = Math.abs(puerta.alto_mm - altoPuerta);
+            
+            if (diffAncho <= 2 && diffAlto <= 2 && puerta.color === colorModulo) {
+                puertaEncontrada = puerta;
+                precioPuerta = puerta.precio_venta;
+                nombrePuerta = puerta.nombre;
+                break;
+            }
+        }
+        
+        // 2. Si no, buscar solo por medidas (cualquier color)
+        if (!puertaEncontrada) {
+            for (let puerta of puertasDB) {
+                const diffAncho = Math.abs(puerta.ancho_mm - anchoPuerta);
+                const diffAlto = Math.abs(puerta.alto_mm - altoPuerta);
+                
+                if (diffAncho <= 2 && diffAlto <= 2) {
+                    puertaEncontrada = puerta;
+                    precioPuerta = puerta.precio_venta;
+                    nombrePuerta = puerta.nombre;
+                    break;
+                }
+            }
+        }
+        
+        // 3. Para COLUMNA_ESCOBERO, buscar específicamente por alto 1098
+        if (!puertaEncontrada && (nombreModulo.includes('ESCOBERO'))) {
+            for (let puerta of puertasDB) {
+                const diffAlto = Math.abs(puerta.alto_mm - 1098);
+                const diffAncho = Math.abs(puerta.ancho_mm - anchoPuerta);
+                
+                if (diffAlto <= 2 && diffAncho <= 2) {
+                    puertaEncontrada = puerta;
+                    precioPuerta = puerta.precio_venta;
+                    nombrePuerta = puerta.nombre;
+                    break;
+                }
+            }
+        }
+        
+        if (!puertaEncontrada) {
+            console.log(`⚠️ Puerta no encontrada: ${Math.round(anchoPuerta)}x${Math.round(altoPuerta)} mm para ${nombreModulo}`);
+        }
+        
+        return {
+            numPuertas: numPuertas,
+            anchoPuerta: Math.round(anchoPuerta),
+            altoPuerta: Math.round(altoPuerta),
+            precioPuerta: precioPuerta,
+            nombrePuerta: nombrePuerta,
+            encontrada: puertaEncontrada !== null,
+            esExcepcion: nombreModulo.includes('ESCOBERO')
+        };
+    }
 
     async function cargarExcelDesdeGitHub() {
         try {
@@ -186,28 +290,25 @@
             
             console.log('Primera fila del Excel:', json[0]);
             
-            // Procesar datos - BUSCAR LA COLUMNA CORRECTA PARA TIPO
             productosDB = [];
+            puertasDB = [];
             
             for (let item of json) {
-                // Buscar la columna que contiene "MODULO" (puede ser 'cod' o 'tipo')
-                let esModulo = false;
-                let tipoValor = '';
-                
-                // Revisar todas las columnas buscando "MODULO"
+                let tipo = '';
                 for (let key in item) {
                     const valor = String(item[key] || '').toUpperCase();
                     if (valor === 'MODULO') {
-                        esModulo = true;
-                        tipoValor = key;
+                        tipo = 'MODULO';
+                        break;
+                    } else if (valor === 'PUERTA') {
+                        tipo = 'PUERTA';
                         break;
                     }
                 }
                 
-                if (!esModulo) continue;
+                if (!tipo) continue;
                 
                 let precioVenta = 0;
-                // Buscar precio_venta en cualquier columna
                 for (let key in item) {
                     if (key.toLowerCase().includes('precio_venta') || key.toLowerCase() === 'precio_venta') {
                         precioVenta = parseFloat(item[key]);
@@ -248,24 +349,31 @@
                     }
                 }
                 
-                if (categoria && nombre) {
-                    productosDB.push({
-                        categoria: categoria,
-                        color: color,
-                        nombre: nombre,
-                        alto_mm: alto,
-                        ancho_mm: ancho,
-                        fondo_mm: fondo,
-                        precio_venta: precioVenta
-                    });
+                const producto = {
+                    tipo: tipo,
+                    categoria: categoria,
+                    color: color,
+                    nombre: nombre,
+                    alto_mm: alto,
+                    ancho_mm: ancho,
+                    fondo_mm: fondo,
+                    precio_venta: precioVenta
+                };
+                
+                if (tipo === 'MODULO' && categoria && nombre) {
+                    productosDB.push(producto);
+                } else if (tipo === 'PUERTA' && ancho > 0 && alto > 0) {
+                    puertasDB.push(producto);
                 }
             }
             
             if (productosDB.length === 0) {
-                throw new Error('No se encontraron módulos. Revisa que la columna tenga "MODULO"');
+                throw new Error('No se encontraron módulos en el archivo');
             }
             
-            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos cargados automáticamente`;
+            console.log(`✅ Cargados: ${productosDB.length} módulos, ${puertasDB.length} puertas`);
+            
+            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos cargados | ${puertasDB.length} puertas disponibles`;
             estadoDatos.className = 'status-loaded';
             loadingMsg.style.display = 'none';
             presupuestadorSection.style.display = 'block';
@@ -282,7 +390,7 @@
                 <strong>Soluciones:</strong><br>
                 1. Verifica que el archivo existe en: <code>${EXCEL_URL}</code><br>
                 2. Sube tu archivo <strong>modulos.xlsx</strong> al repositorio<br>
-                3. Asegúrate de que el archivo tenga una fila con "MODULO" en alguna columna
+                3. Asegúrate de que el archivo tenga filas con "MODULO" y "PUERTA"
             `;
         }
     }
@@ -337,7 +445,8 @@
             selectNombre.innerHTML += `<option value="${item.nombre}" 
                 data-alto="${item.alto_mm}" 
                 data-ancho="${item.ancho_mm}"
-                data-fondo="${item.fondo_mm}">
+                data-fondo="${item.fondo_mm}"
+                data-precio="${item.precio_venta}">
                 ${item.nombre} (${item.ancho_mm}×${item.alto_mm}×${item.fondo_mm} mm) - ${item.precio_venta.toFixed(2)}€
             </option>`;
         });
@@ -383,18 +492,39 @@
             return;
         }
         
-        const cantidad = parseInt(inputCantidad.value);
-        if (isNaN(cantidad) || cantidad <= 0) return;
+        const cantidadModulos = parseInt(inputCantidad.value);
+        if (isNaN(cantidadModulos) || cantidadModulos <= 0) return;
         
+        const infoPuertas = calcularPuertas(articuloSeleccionado);
+        const totalPuertas = infoPuertas.numPuertas * cantidadModulos;
+        
+        // Añadir el MÓDULO
         presupuestoActual.push({
             categoria: articuloSeleccionado.categoria,
             color: articuloSeleccionado.color,
             nombre: articuloSeleccionado.nombre,
             medidas: `${articuloSeleccionado.ancho_mm}×${articuloSeleccionado.alto_mm}×${articuloSeleccionado.fondo_mm} mm`,
-            cantidad: cantidad,
+            cantidad: cantidadModulos,
             precioUnitario: articuloSeleccionado.precio_venta,
-            total: cantidad * articuloSeleccionado.precio_venta
+            total: cantidadModulos * articuloSeleccionado.precio_venta,
+            esPuerta: false
         });
+        
+        // Añadir las PUERTAS asociadas
+        if (totalPuertas > 0) {
+            const avisoPrecio = infoPuertas.precioPuerta === 0 ? ' ⚠️ (Precio no encontrado)' : '';
+            const excepcionTexto = infoPuertas.esExcepcion ? ' 🧹 (Ancho completo, alto especial 1098mm)' : '';
+            presupuestoActual.push({
+                categoria: "🚪 PUERTAS",
+                color: articuloSeleccionado.color,
+                nombre: `↳ ${infoPuertas.nombrePuerta}${avisoPrecio}${excepcionTexto} (${infoPuertas.numPuertas} puerta/s por módulo)`,
+                medidas: `${infoPuertas.anchoPuerta}×${infoPuertas.altoPuerta} mm`,
+                cantidad: totalPuertas,
+                precioUnitario: infoPuertas.precioPuerta,
+                total: totalPuertas * infoPuertas.precioPuerta,
+                esPuerta: true
+            });
+        }
         
         actualizarTablaPresupuesto();
         inputCantidad.value = 1;
@@ -413,8 +543,9 @@
         
         presupuestoActual.forEach((item, idx) => {
             total += item.total;
+            const rowClass = item.esPuerta ? 'class="row-puerta"' : '';
             tablaPresupuesto.innerHTML += `
-                <tr>
+                <tr ${rowClass}>
                     <td>${item.categoria}</td>
                     <td>${item.color}</td>
                     <td>${item.nombre}</td>
