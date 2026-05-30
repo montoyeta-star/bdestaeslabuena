@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor de Datos - Excel</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        /* Login */
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            margin: 100px auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .login-container h1 { text-align: center; margin-bottom: 30px; }
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .error-msg { color: #e53e3e; text-align: center; margin-top: 15px; }
+        /* Main */
+        .main-container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: none;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        h1 { color: #2c3e50; }
+        .btn-danger {
+            background-color: #e53e3e;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+        }
+        .status-bar {
+            background-color: #e6f7ff;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-loaded { color: #38a169; font-weight: bold; }
+        .status-not-loaded { color: #e53e3e; font-weight: bold; }
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .upload-area:hover { border-color: #3182ce; background-color: #ebf8ff; }
+        .table-container {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #edf2f7;
+            position: sticky;
+            top: 0;
+            font-weight: bold;
+        }
+        .stats {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f0fdf4;
+            border-radius: 6px;
+            color: #22543d;
+        }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+
+<!-- PANTALLA DE LOGIN -->
+<div id="loginPanel" class="login-container">
+    <h1>🔐 Acceso</h1>
+    <input type="text" id="loginUser" placeholder="Usuario">
+    <input type="password" id="loginPass" placeholder="Contraseña">
+    <button onclick="verificarLogin()">Entrar</button>
+    <div id="loginError" class="error-msg"></div>
+</div>
+
+<!-- PANTALLA PRINCIPAL -->
+<div id="mainPanel" class="main-container">
+    <div class="header">
+        <h1>📊 Visor de Datos - Excel</h1>
+        <button class="btn-danger" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+    </div>
+
+    <div class="status-bar no-print">
+        <span>📁 Estado:</span>
+        <span id="estadoDatos" class="status-not-loaded">Sin datos cargados</span>
+    </div>
+
+    <div id="uploadSection" class="no-print">
+        <div class="upload-area" onclick="document.getElementById('excelInput').click()">
+            📂 Haz clic para seleccionar tu archivo Excel (.xlsx)
+            <input type="file" id="excelInput" accept=".xlsx, .xls" style="display: none;">
+        </div>
+        <p style="font-size: 12px; color: #666; text-align: center;">
+            Selecciona tu archivo modulos.xlsx para ver los datos
+        </p>
+    </div>
+
+    <div id="dataSection" style="display: none;">
+        <div class="stats" id="stats"></div>
+        <div class="table-container">
+            <table id="dataTable">
+                <thead id="tableHeader"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== LOGIN ==========
+    const USUARIO = "admin";
+    const CONTRASENA = "1234";
+
+    function verificarLogin() {
+        const user = document.getElementById('loginUser').value;
+        const pass = document.getElementById('loginPass').value;
+        const errorDiv = document.getElementById('loginError');
+
+        if (user === USUARIO && pass === CONTRASENA) {
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('mainPanel').style.display = 'block';
+            errorDiv.innerHTML = '';
+        } else {
+            errorDiv.innerHTML = '❌ Usuario o contraseña incorrectos';
+        }
+    }
+
+    function cerrarSesion() {
+        document.getElementById('mainPanel').style.display = 'none';
+        document.getElementById('loginPanel').style.display = 'block';
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
+        document.getElementById('estadoDatos').innerHTML = 'Sin datos cargados';
+        document.getElementById('estadoDatos').className = 'status-not-loaded';
+        document.getElementById('dataSection').style.display = 'none';
+        document.getElementById('uploadSection').style.display = 'block';
+    }
+
+    // ========== CARGA Y VISUALIZACIÓN DEL EXCEL ==========
+    const excelInput = document.getElementById('excelInput');
+    const estadoDatos = document.getElementById('estadoDatos');
+    const uploadSection = document.getElementById('uploadSection');
+    const dataSection = document.getElementById('dataSection');
+    const tableHeader = document.getElementById('tableHeader');
+    const tableBody = document.getElementById('tableBody');
+    const statsDiv = document.getElementById('stats');
+
+    excelInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        estadoDatos.innerHTML = '📖 Leyendo archivo...';
+        
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const data = evt.target.result;
+                const workbook = XLSX.read(data, { type: 'binary' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+
+                if (!json || json.length === 0) {
+                    throw new Error('El archivo está vacío');
+                }
+
+                // Mostrar datos en tabla
+                mostrarTabla(json);
+                
+                estadoDatos.innerHTML = `✅ Archivo cargado: ${file.name} (${json.length-1} filas de datos)`;
+                estadoDatos.className = 'status-loaded';
+                uploadSection.style.display = 'none';
+                dataSection.style.display = 'block';
+                
+            } catch (error) {
+                console.error(error);
+                estadoDatos.innerHTML = `❌ Error: ${error.message}`;
+                estadoDatos.className = 'status-not-loaded';
+                alert('Error al leer el archivo: ' + error.message);
+            }
+        };
+        reader.readAsBinaryString(file);
+    });
+
+    function mostrarTabla(datos) {
+        if (!datos || datos.length === 0) return;
+        
+        // Limpiar tablas
+        tableHeader.innerHTML = '';
+        tableBody.innerHTML = '';
+        
+        // Cabeceras (primera fila)
+        const headers = datos[0];
+        const headerRow = document.createElement('tr');
+        for (let i = 0; i < headers.length; i++) {
+            const th = document.createElement('th');
+            th.textContent = headers[i] || `Columna ${i+1}`;
+            headerRow.appendChild(th);
+        }
+        tableHeader.appendChild(headerRow);
+        
+        // Datos (resto de filas)
+        let filasConDatos = 0;
+        for (let i = 1; i < datos.length; i++) {
+            const row = datos[i];
+            // Verificar si la fila tiene algún dato relevante
+            const tieneDatos = row.some(cell => cell && cell.toString().trim() !== '');
+            if (!tieneDatos) continue;
+            
+            filasConDatos++;
+            const tr = document.createElement('tr');
+            for (let j = 0; j < headers.length; j++) {
+                const td = document.createElement('td');
+                let valor = row[j];
+                if (valor === undefined || valor === null) valor = '';
+                td.textContent = valor;
+                tr.appendChild(td);
+            }
+            tableBody.appendChild(tr);
+        }
+        
+        // Actualizar estadísticas
+        statsDiv.innerHTML = `
+            📊 <strong>Resumen:</strong> 
+            ${headers.length} columnas | 
+            ${filasConDatos} filas de datos
+        `;
+    }
+</script>
+</body>
+</html>
