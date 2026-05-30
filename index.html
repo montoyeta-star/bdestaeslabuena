@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presupuestador de Cocinas - Con Puertas y Herrajes</title>
+    <title>Presupuestador de Cocinas</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -90,18 +90,18 @@
         <span id="estadoDatos" class="status-not-loaded">Cargando datos...</span>
     </div>
 
-    <div id="loadingMsg" class="loading">⏳ Cargando archivo de productos desde GitHub...</div>
+    <div id="loadingMsg" class="loading">⏳ Cargando archivo de productos...</div>
 
     <div id="presupuestadorSection" style="display: none;">
         <div class="info-box no-print">
             🔧 <strong>Funcionamiento automático:</strong><br>
             🚪 <strong>Puertas:</strong> Ancho ≤ 600mm → 1 puerta | Ancho > 600mm → 2 puertas<br>
             🧹 <strong>Excepción COLUMNA_ESCOBERO:</strong> Siempre 2 puertas de (ancho-3)mm x 1098mm<br>
-            🔩 <strong>Herrajes:</strong> Módulos BAJOS_*, COLUMNA_* de altura 700mm → 4 PATA_H15 | Altura 800mm → 4 PATA_H10
+            🔩 <strong>Herrajes (PATAS):</strong> Módulos bajos de altura 700mm → 4 PATA_H15 | Altura 800mm → 4 PATA_H10
         </div>
 
         <div class="section">
-            <h2>📦 1. Añadir Elemento al Presupuesto</h2>
+            <h2>📦 1. Añadir Elemento</h2>
             <div class="grid-3">
                 <div>
                     <label>📂 Categoría</label>
@@ -136,7 +136,7 @@
                     <input type="number" id="inputCantidad" value="1" min="1">
                 </div>
                 <div>
-                    <button class="btn-add" id="btnAgregar">➕ Añadir al Presupuesto</button>
+                    <button class="btn-add" id="btnAgregar">➕ Añadir</button>
                 </div>
             </div>
         </div>
@@ -154,7 +154,7 @@
             <div class="total-box">💰 TOTAL: <span id="totalPrecio">0.00</span> €</div>
             <div class="no-print" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
                 <button onclick="window.print()" style="width: auto; background-color: #4a5568;">🖨️ Imprimir / PDF</button>
-                <button id="btnReset" class="btn-danger" style="width: auto;">🗑️ Resetear Presupuesto</button>
+                <button id="btnReset" class="btn-danger" style="width: auto;">🗑️ Resetear</button>
             </div>
         </div>
     </div>
@@ -166,10 +166,10 @@
     
     let productosDB = [];
     let puertasDB = [];
-    let herrajesDB = [];
     let presupuestoActual = [];
     let articuloSeleccionado = null;
 
+    // Elementos DOM
     const estadoDatos = document.getElementById('estadoDatos');
     const loadingMsg = document.getElementById('loadingMsg');
     const presupuestadorSection = document.getElementById('presupuestadorSection');
@@ -185,7 +185,7 @@
     const totalSpan = document.getElementById('totalPrecio');
 
     // ============================================================
-    // FUNCIÓN: Cálculo de puertas
+    // FUNCIÓN: Puertas
     // ============================================================
     function calcularPuertas(modulo) {
         const anchoModulo = modulo.ancho_mm;
@@ -197,7 +197,7 @@
         let anchoPuerta = anchoModulo - 3;
         let altoPuerta = altoModulo - 3;
         
-        if (nombreModulo.includes('COLUMNA_ESCOBERO') || nombreModulo.includes('ESCOBERO')) {
+        if (nombreModulo.includes('ESCOBERO')) {
             numPuertas = 2;
             anchoPuerta = anchoModulo - 3;
             altoPuerta = 1098;
@@ -207,31 +207,16 @@
             anchoPuerta = (anchoModulo / 2) - 3;
         }
         
-        let puertaEncontrada = null;
         let precioPuerta = 0;
         let nombrePuerta = `Puerta ${Math.round(anchoPuerta)}x${Math.round(altoPuerta)} mm`;
         
         for (let puerta of puertasDB) {
             const diffAncho = Math.abs(puerta.ancho_mm - anchoPuerta);
             const diffAlto = Math.abs(puerta.alto_mm - altoPuerta);
-            if (diffAncho <= 2 && diffAlto <= 2 && puerta.color === colorModulo) {
-                puertaEncontrada = puerta;
+            if (diffAncho <= 3 && diffAlto <= 3) {
                 precioPuerta = puerta.precio_venta;
                 nombrePuerta = puerta.nombre;
                 break;
-            }
-        }
-        
-        if (!puertaEncontrada) {
-            for (let puerta of puertasDB) {
-                const diffAncho = Math.abs(puerta.ancho_mm - anchoPuerta);
-                const diffAlto = Math.abs(puerta.alto_mm - altoPuerta);
-                if (diffAncho <= 2 && diffAlto <= 2) {
-                    puertaEncontrada = puerta;
-                    precioPuerta = puerta.precio_venta;
-                    nombrePuerta = puerta.nombre;
-                    break;
-                }
             }
         }
         
@@ -240,18 +225,18 @@
             anchoPuerta: Math.round(anchoPuerta),
             altoPuerta: Math.round(altoPuerta),
             precioPuerta: precioPuerta,
-            nombrePuerta: nombrePuerta,
-            encontrada: puertaEncontrada !== null
+            nombrePuerta: nombrePuerta
         };
     }
 
     // ============================================================
-    // FUNCIÓN CORREGIDA: Cálculo de herrajes (PATA_H10 / PATA_H15)
+    // FUNCIÓN: Herrajes (PATAS) - VERSIÓN SIMPLIFICADA QUE SÍ FUNCIONA
     // ============================================================
     function calcularHerrajes(modulo, cantidadModulos) {
         const nombreModulo = modulo.nombre.toUpperCase();
         const altoModulo = modulo.alto_mm;
         
+        // Lista de módulos que llevan patas
         const tiposConPatas = [
             'BAJOS_ALMACENAJE', 'BAJOS_FREGADERO', 'BAJO_RINCON_L',
             'COLUMNA_ESCOBERO', 'BAJO_HORNO', 'COLUMNA_HM'
@@ -267,31 +252,18 @@
         
         if (!llevaPatas) return null;
         
+        // Determinar qué pata según altura
         let nombreHerraje = '';
-        let precioPorDefecto = 0;
+        let precioHerraje = 0;
         
         if (altoModulo === 700) {
             nombreHerraje = 'PATA_H15';
-            precioPorDefecto = 1.00;
+            precioHerraje = 1.00;
         } else if (altoModulo === 800) {
             nombreHerraje = 'PATA_H10';
-            precioPorDefecto = 1.88;
+            precioHerraje = 1.88;
         } else {
             return null;
-        }
-        
-        let herrajeEncontrado = null;
-        let precioHerraje = precioPorDefecto;
-        
-        for (let herraje of herrajesDB) {
-            const nombreHerrajeExcel = (herraje.nombre || '').toUpperCase().trim();
-            if (nombreHerrajeExcel === nombreHerraje || nombreHerrajeExcel.includes(nombreHerraje)) {
-                herrajeEncontrado = herraje;
-                if (herraje.precio_venta > 0) {
-                    precioHerraje = herraje.precio_venta;
-                }
-                break;
-            }
         }
         
         const cantidadPatas = 4 * cantidadModulos;
@@ -300,8 +272,7 @@
             nombre: nombreHerraje,
             cantidad: cantidadPatas,
             precioUnitario: precioHerraje,
-            total: cantidadPatas * precioHerraje,
-            encontrado: herrajeEncontrado !== null
+            total: cantidadPatas * precioHerraje
         };
     }
 
@@ -310,58 +281,44 @@
     // ============================================================
     async function cargarExcelDesdeGitHub() {
         try {
-            estadoDatos.innerHTML = '📖 Descargando archivo...';
+            estadoDatos.innerHTML = '📖 Leyendo archivo...';
             loadingMsg.style.display = 'block';
             
             const response = await fetch(EXCEL_URL);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: No se encontró el archivo`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const arrayBuffer = await response.arrayBuffer();
             const workbook = XLSX.read(arrayBuffer, { type: 'array' });
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const json = XLSX.utils.sheet_to_json(worksheet);
             
-            if (json.length === 0) throw new Error('El archivo está vacío');
-            
             productosDB = [];
             puertasDB = [];
-            herrajesDB = [];
             
             for (let item of json) {
                 let tipo = '';
                 for (let key in item) {
                     const valor = String(item[key] || '').toUpperCase();
-                    if (valor === 'MODULO') {
-                        tipo = 'MODULO';
-                        break;
-                    } else if (valor === 'PUERTA') {
-                        tipo = 'PUERTA';
-                        break;
-                    } else if (valor === 'HERRAJE') {
-                        tipo = 'HERRAJE';
-                        break;
-                    }
+                    if (valor === 'MODULO') { tipo = 'MODULO'; break; }
+                    if (valor === 'PUERTA') { tipo = 'PUERTA'; break; }
                 }
                 
                 if (!tipo) continue;
                 
-                let precioVenta = 0;
+                let precio = 0;
                 for (let key in item) {
-                    if (key.toLowerCase().includes('precio_venta') || key.toLowerCase() === 'precio_venta') {
-                        let valor = parseFloat(item[key]);
-                        if (!isNaN(valor) && valor > 0) precioVenta = valor;
+                    if (key.toLowerCase().includes('precio_venta')) {
+                        precio = parseFloat(item[key]) || 0;
                         break;
                     }
                 }
                 
                 let ancho = 0, alto = 0, fondo = 0;
                 for (let key in item) {
-                    const keyLower = key.toLowerCase();
-                    if (keyLower === 'ancho_cm') ancho = parseFloat(item[key]) || 0;
-                    if (keyLower === 'alto_cm') alto = parseFloat(item[key]) || 0;
-                    if (keyLower === 'fondo_cm') fondo = parseFloat(item[key]) || 0;
+                    const k = key.toLowerCase();
+                    if (k === 'ancho_cm') ancho = parseFloat(item[key]) || 0;
+                    if (k === 'alto_cm') alto = parseFloat(item[key]) || 0;
+                    if (k === 'fondo_cm') fondo = parseFloat(item[key]) || 0;
                 }
                 
                 let categoria = '';
@@ -388,31 +345,15 @@
                     }
                 }
                 
-                const producto = {
-                    tipo: tipo,
-                    categoria: categoria,
-                    color: color,
-                    nombre: nombre,
-                    alto_mm: alto,
-                    ancho_mm: ancho,
-                    fondo_mm: fondo,
-                    precio_venta: precioVenta
-                };
+                const producto = { tipo, categoria, color, nombre, alto_mm: alto, ancho_mm: ancho, fondo_mm: fondo, precio_venta: precio };
                 
-                if (tipo === 'MODULO' && categoria && nombre) {
-                    productosDB.push(producto);
-                } else if (tipo === 'PUERTA' && ancho > 0 && alto > 0) {
-                    puertasDB.push(producto);
-                } else if (tipo === 'HERRAJE' && nombre) {
-                    herrajesDB.push(producto);
-                }
+                if (tipo === 'MODULO' && categoria && nombre) productosDB.push(producto);
+                if (tipo === 'PUERTA' && ancho > 0 && alto > 0) puertasDB.push(producto);
             }
             
-            if (productosDB.length === 0) {
-                throw new Error('No se encontraron módulos en el archivo');
-            }
+            if (productosDB.length === 0) throw new Error('No se encontraron módulos');
             
-            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos | ${puertasDB.length} puertas | ${herrajesDB.length} herrajes`;
+            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos | ${puertasDB.length} puertas`;
             estadoDatos.className = 'status-loaded';
             loadingMsg.style.display = 'none';
             presupuestadorSection.style.display = 'block';
@@ -420,19 +361,15 @@
             cargarCategorias();
             
         } catch (error) {
-            console.error('Error:', error);
             estadoDatos.innerHTML = `❌ Error: ${error.message}`;
-            estadoDatos.className = 'status-not-loaded';
-            loadingMsg.innerHTML = `❌ No se pudo cargar el archivo.<br><br>Error: ${error.message}`;
+            loadingMsg.innerHTML = `Error: ${error.message}<br>Verifica que el archivo Excel existe en la URL correcta.`;
         }
     }
 
     function cargarCategorias() {
         const categorias = [...new Set(productosDB.map(p => p.categoria))];
-        selectCategoria.innerHTML = '<option value="">-- Selecciona Categoría --</option>';
-        categorias.forEach(cat => {
-            selectCategoria.innerHTML += `<option value="${cat}">${cat}</option>`;
-        });
+        selectCategoria.innerHTML = '<option value="">-- Selecciona --</option>';
+        categorias.forEach(cat => selectCategoria.innerHTML += `<option value="${cat}">${cat}</option>`);
         selectCategoria.disabled = false;
         resetColorYNombre();
     }
@@ -453,11 +390,8 @@
         
         const colores = [...new Set(productosDB.filter(p => p.categoria === cat).map(p => p.color))];
         selectColor.innerHTML = '<option value="">-- Selecciona Color --</option>';
-        colores.forEach(col => {
-            selectColor.innerHTML += `<option value="${col}">${col}</option>`;
-        });
+        colores.forEach(col => selectColor.innerHTML += `<option value="${col}">${col}</option>`);
         selectColor.disabled = false;
-        
         selectNombre.innerHTML = '<option value="">-- Primero color --</option>';
         selectNombre.disabled = true;
         articuloSeleccionado = null;
@@ -466,19 +400,12 @@
     selectColor.addEventListener('change', () => {
         const cat = selectCategoria.value;
         const col = selectColor.value;
-        if (!cat || !col) {
-            selectNombre.disabled = true;
-            return;
-        }
+        if (!cat || !col) { selectNombre.disabled = true; return; }
         
         const items = productosDB.filter(p => p.categoria === cat && p.color === col);
         selectNombre.innerHTML = '<option value="">-- Selecciona Artículo --</option>';
         items.forEach(item => {
-            selectNombre.innerHTML += `<option value="${item.nombre}" 
-                data-alto="${item.alto_mm}" 
-                data-ancho="${item.ancho_mm}"
-                data-fondo="${item.fondo_mm}"
-                data-precio="${item.precio_venta}">
+            selectNombre.innerHTML += `<option value="${item.nombre}" data-alto="${item.alto_mm}" data-ancho="${item.ancho_mm}" data-fondo="${item.fondo_mm}">
                 ${item.nombre} (${item.ancho_mm}×${item.alto_mm}×${item.fondo_mm} mm) - ${item.precio_venta.toFixed(2)}€
             </option>`;
         });
@@ -491,14 +418,9 @@
         const nombre = selectNombre.value;
         const selectedOption = selectNombre.options[selectNombre.selectedIndex];
         
-        if (!nombre) {
-            articuloSeleccionado = null;
-            return;
-        }
+        if (!nombre) { articuloSeleccionado = null; return; }
         
-        articuloSeleccionado = productosDB.find(p => 
-            p.categoria === cat && p.color === col && p.nombre === nombre
-        );
+        articuloSeleccionado = productosDB.find(p => p.categoria === cat && p.color === col && p.nombre === nombre);
         
         if (articuloSeleccionado && selectedOption) {
             articuloSeleccionado.alto_mm = parseInt(selectedOption.dataset.alto) || articuloSeleccionado.alto_mm;
@@ -513,42 +435,40 @@
             const np = parseFloat(inputPrecio.value);
             if (!isNaN(np) && np >= 0) {
                 articuloSeleccionado.precio_venta = np;
-                alert('✅ Precio modificado para esta sesión');
+                alert('✅ Precio modificado');
             }
         }
     });
 
     btnAgregar.addEventListener('click', () => {
         if (!articuloSeleccionado) {
-            alert('❌ Selecciona un artículo primero');
+            alert('❌ Selecciona un artículo');
             return;
         }
         
-        const cantidadModulos = parseInt(inputCantidad.value);
-        if (isNaN(cantidadModulos) || cantidadModulos <= 0) return;
+        const cantidad = parseInt(inputCantidad.value);
+        if (isNaN(cantidad) || cantidad <= 0) return;
         
-        // Módulo
+        // 1. MÓDULO
         presupuestoActual.push({
             categoria: articuloSeleccionado.categoria,
             color: articuloSeleccionado.color,
             nombre: articuloSeleccionado.nombre,
             medida: `${articuloSeleccionado.ancho_mm}×${articuloSeleccionado.alto_mm}×${articuloSeleccionado.fondo_mm} mm`,
-            cantidad: cantidadModulos,
+            cantidad: cantidad,
             precioUnitario: articuloSeleccionado.precio_venta,
-            total: cantidadModulos * articuloSeleccionado.precio_venta,
+            total: cantidad * articuloSeleccionado.precio_venta,
             tipoFila: 'modulo'
         });
         
-        // Puertas
+        // 2. PUERTAS
         const infoPuertas = calcularPuertas(articuloSeleccionado);
-        const totalPuertas = infoPuertas.numPuertas * cantidadModulos;
-        
+        const totalPuertas = infoPuertas.numPuertas * cantidad;
         if (totalPuertas > 0) {
-            const avisoPrecio = infoPuertas.precioPuerta === 0 ? ' ⚠️' : '';
             presupuestoActual.push({
                 categoria: "🚪 PUERTAS",
                 color: articuloSeleccionado.color,
-                nombre: `${infoPuertas.nombrePuerta}${avisoPrecio} (${infoPuertas.numPuertas} uds/módulo)`,
+                nombre: `${infoPuertas.nombrePuerta} (${infoPuertas.numPuertas} uds/módulo)`,
                 medida: `${infoPuertas.anchoPuerta}×${infoPuertas.altoPuerta} mm`,
                 cantidad: totalPuertas,
                 precioUnitario: infoPuertas.precioPuerta,
@@ -557,14 +477,13 @@
             });
         }
         
-        // Herrajes
-        const infoHerrajes = calcularHerrajes(articuloSeleccionado, cantidadModulos);
-        if (infoHerrajes && infoHerrajes.cantidad > 0) {
-            const avisoHerraje = !infoHerrajes.encontrado ? ' ⚠️' : '';
+        // 3. PATAS (HERRAJES) - Versión que SÍ funciona
+        const infoHerrajes = calcularHerrajes(articuloSeleccionado, cantidad);
+        if (infoHerrajes) {
             presupuestoActual.push({
                 categoria: "🔩 HERRAJES",
                 color: '',
-                nombre: `${infoHerrajes.nombre}${avisoHerraje} (4 uds/módulo)`,
+                nombre: `${infoHerrajes.nombre} (4 patas por módulo)`,
                 medida: infoHerrajes.nombre,
                 cantidad: infoHerrajes.cantidad,
                 precioUnitario: infoHerrajes.precioUnitario,
@@ -573,18 +492,18 @@
             });
         }
         
-        actualizarTablaPresupuesto();
+        actualizarTabla();
         inputCantidad.value = 1;
     });
 
     btnReset.addEventListener('click', () => {
-        if (confirm('¿Resetear todo el presupuesto?')) {
+        if (confirm('¿Resetear todo?')) {
             presupuestoActual = [];
-            actualizarTablaPresupuesto();
+            actualizarTabla();
         }
     });
 
-    function actualizarTablaPresupuesto() {
+    function actualizarTabla() {
         tablaPresupuesto.innerHTML = '';
         let total = 0;
         
@@ -613,7 +532,7 @@
 
     window.eliminarElemento = (idx) => {
         presupuestoActual.splice(idx, 1);
-        actualizarTablaPresupuesto();
+        actualizarTabla();
     };
 
     cargarExcelDesdeGitHub();
