@@ -31,6 +31,7 @@
             border: 1px solid #e2e8f0;
         }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         label { font-weight: bold; display: block; margin-bottom: 5px; color: #4a5568; }
         select, input, button {
             width: 100%;
@@ -85,6 +86,31 @@
             margin-top: 15px;
             border: 1px solid #f59e0b;
         }
+        .patas-selector {
+            background: #e0f2fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #38bdf8;
+        }
+        .patas-label {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-top: 5px;
+            flex-wrap: wrap;
+        }
+        .patas-label label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .patas-label input {
+            width: auto;
+            margin: 0;
+        }
         .modelo-label {
             display: flex;
             gap: 20px;
@@ -101,6 +127,11 @@
             font-style: italic;
             font-weight: bold;
         }
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -116,6 +147,26 @@
     <div id="loadingMsg" class="loading">⏳ Cargando archivo de productos...</div>
 
     <div id="presupuestadorSection" style="display: none;">
+        <!-- Selector de Patas (visible siempre) -->
+        <div class="patas-selector no-print">
+            <label>🔩 Tipo de Pata (para módulos que lo permitan):</label>
+            <div class="patas-label">
+                <label>
+                    <input type="radio" name="tipoPata" value="PATA_H10" checked> 
+                    PATA_H10 (1.88€/unidad) - 4 patas por módulo
+                </label>
+                <label>
+                    <input type="radio" name="tipoPata" value="PATA_H15"> 
+                    PATA_H15 (1.00€/unidad) - 4 patas por módulo
+                </label>
+                <label>
+                    <input type="radio" name="tipoPata" value="NINGUNA"> 
+                    ❌ Ninguna (sin patas)
+                </label>
+            </div>
+            <div class="info-text">⚠️ Nota: Los módulos ALTOS no llevan patas independientemente de esta selección.</div>
+        </div>
+
         <div class="section">
             <h2>📦 1. Añadir Elemento</h2>
             <div class="grid-3">
@@ -139,7 +190,6 @@
                 </div>
             </div>
 
-            <!-- Selector de modelo de puerta -->
             <div class="modelo-selector">
                 <label>🚪 Modelo de Puerta:</label>
                 <div class="modelo-label">
@@ -200,8 +250,8 @@
 <script>
     const EXCEL_URL = "https://montoyeta-star.github.io/bdestaeslabuena/modulos.xlsx";
     
-    let productosDB = [];      // Módulos
-    let puertasDB = [];        // Puertas (con categoria = CLOE o TAMESIS_COLOR)
+    let productosDB = [];
+    let puertasDB = [];
     let presupuestoActual = [];
     let articuloSeleccionado = null;
 
@@ -235,6 +285,26 @@
         return 'TAMESIS_COLOR';
     }
 
+    function getTipoPataSeleccionado() {
+        const radios = document.getElementsByName('tipoPata');
+        for (let radio of radios) {
+            if (radio.checked) return radio.value;
+        }
+        return 'PATA_H10';
+    }
+
+    function getPrecioPata(tipo) {
+        if (tipo === 'PATA_H10') return 1.88;
+        if (tipo === 'PATA_H15') return 1.00;
+        return 0;
+    }
+
+    function getNombrePata(tipo) {
+        if (tipo === 'PATA_H10') return 'PATA_H10';
+        if (tipo === 'PATA_H15') return 'PATA_H15';
+        return '';
+    }
+
     function getTextoColorPuerta(modelo) {
         if (modelo === 'TAMESIS_COLOR') {
             return '🎨 A ELEGIR, DE ENCARGO';
@@ -246,31 +316,37 @@
         const nombreModulo = modulo.nombre.toUpperCase();
         const categoria = modulo.categoria.toUpperCase();
         const esAlto = nombreModulo.includes('ALTO') || categoria.includes('ALTO');
-        addDebug(`🔍 ¿Es alto? ${modulo.nombre} → ${esAlto ? 'SÍ (lleva colgador)' : 'NO'}`);
+        addDebug(`🔍 ¿Es alto? ${modulo.nombre} → ${esAlto ? 'SÍ (lleva colgador, NO PATAS)' : 'NO'}`);
         return esAlto;
     }
 
-    function agregarPatas(modulo, cantidad) {
+    // ============================================================
+    // FUNCIÓN DE PATAS - AHORA USA EL SELECTOR DEL USUARIO
+    // ============================================================
+    function agregarPatas(modulo, cantidad, tipoPataSeleccionado) {
         const nombreModulo = modulo.nombre.toUpperCase();
-        const altura = modulo.alto_mm;
         
-        addDebug(`🔍 Analizando módulo: "${nombreModulo}" | Altura: ${altura}mm`);
+        addDebug(`🔍 Analizando patas para: "${nombreModulo}"`);
         
+        // Los módulos ALTOS NO llevan patas NUNCA
         if (esModuloAlto(modulo)) {
-            addDebug(`❌ Es módulo ALTO → NO lleva patas`);
+            addDebug(`❌ Es módulo ALTO → NO lleva patas (independientemente del selector)`);
             return null;
         }
         
+        // Si el usuario seleccionó "NINGUNA"
+        if (tipoPataSeleccionado === 'NINGUNA') {
+            addDebug(`❌ Usuario seleccionó "NINGUNA" → NO se añaden patas`);
+            return null;
+        }
+        
+        // Verificar si el módulo debe llevar patas (solo módulos bajos)
         const llevaPatasSiContiene = [
             'BAJOS ALMACENAJE',
             'BAJOS_FREGADERO',
             'BAJO RINCON L',
             'ESCOBERO',
-            'BAJO HORNO',
-            'COLUMNA ESCOBERO 2000',
-            'COLUMNA ESCOBERO 2200',
-            'COLUMNA ESCOBERO 2300',
-            'COLUMNA_HM',  
+            'BAJO HORNO'
         ];
         
         let llevaPatas = false;
@@ -283,26 +359,15 @@
         }
         
         if (!llevaPatas) {
-            addDebug(`❌ NO lleva patas`);
+            addDebug(`❌ NO lleva patas (no es un módulo bajo estándar)`);
             return null;
         }
         
-        let nombrePata = '';
-        let precioPata = 0;
-        
-        if (altura === 700) {
-            nombrePata = 'PATA_H15';
-            precioPata = 1.00;
-        } else if (altura === 800) {
-            nombrePata = 'PATA_H10';
-            precioPata = 1.88;
-        } else {
-            addDebug(`⚠️ Altura ${altura}mm no es 700 ni 800 → NO se añaden patas`);
-            return null;
-        }
-        
+        const precioPata = getPrecioPata(tipoPataSeleccionado);
+        const nombrePata = getNombrePata(tipoPataSeleccionado);
         const totalPatas = 4 * cantidad;
-        addDebug(`📊 AÑADIENDO: ${totalPatas} x ${nombrePata} = ${(totalPatas * precioPata).toFixed(2)}€`);
+        
+        addDebug(`📊 AÑADIENDO: ${totalPatas} x ${nombrePata} (${precioPata}€/u) = ${(totalPatas * precioPata).toFixed(2)}€`);
         
         return {
             nombre: nombrePata,
@@ -328,9 +393,6 @@
         };
     }
 
-    // ============================================================
-    // FUNCIÓN CORREGIDA: usa categoria como modelo y precio_venta real
-    // ============================================================
     function calcularPuertas(modulo, cantidad, modeloPuerta) {
         const ancho = modulo.ancho_mm;
         const alto = modulo.alto_mm;
@@ -349,15 +411,12 @@
             anchoPuerta = (ancho / 2) - 3;
         }
         
-        // Redondear medidas
         anchoPuerta = Math.round(anchoPuerta);
         altoPuerta = Math.round(altoPuerta);
         
-        // Buscar puerta en la DB por categoria (modelo) + medidas
         let precioPuerta = 0;
         let nombrePuerta = `Puerta ${modeloPuerta} ${anchoPuerta}x${altoPuerta} mm`;
         let colorPuerta = '';
-        let puertaEncontrada = null;
         
         for (let p of puertasDB) {
             const modeloDB = (p.categoria || '').toUpperCase();
@@ -367,8 +426,7 @@
                 precioPuerta = p.precio_venta;
                 nombrePuerta = p.nombre || `${modeloPuerta} ${anchoPuerta}x${altoPuerta} mm`;
                 colorPuerta = p.color || '';
-                puertaEncontrada = p;
-                addDebug(`✅ Puerta encontrada: ${modeloPuerta} | ${p.color || 'sin color'} | ${anchoPuerta}x${altoPuerta} = ${precioPuerta}€`);
+                addDebug(`✅ Puerta encontrada: ${modeloPuerta} | ${anchoPuerta}x${altoPuerta} = ${precioPuerta}€`);
                 break;
             }
         }
@@ -404,7 +462,6 @@
             puertasDB = [];
             
             for (let item of json) {
-                // Detectar tipo
                 let tipo = '';
                 for (let key in item) {
                     const v = String(item[key] || '').toUpperCase();
@@ -413,7 +470,6 @@
                 }
                 if (!tipo) continue;
                 
-                // Precio venta
                 let precio = 0;
                 for (let key in item) {
                     const k = key.toLowerCase();
@@ -423,7 +479,6 @@
                     }
                 }
                 
-                // Medidas
                 let ancho = 0, alto = 0, fondo = 0;
                 for (let key in item) {
                     const k = key.toLowerCase();
@@ -432,7 +487,6 @@
                     if (k === 'fondo_cm') fondo = parseFloat(item[key]) || 0;
                 }
                 
-                // Campos principales
                 let categoria = '', nombre = '', color = '';
                 for (let key in item) {
                     const k = key.toLowerCase();
@@ -443,8 +497,8 @@
                 
                 const obj = { 
                     tipo, 
-                    categoria,  // Para puertas: CLOE o TAMESIS_COLOR
-                    color,      // color_acabado
+                    categoria,
+                    color,
                     nombre, 
                     alto_mm: alto, 
                     ancho_mm: ancho, 
@@ -469,15 +523,11 @@
             
             cargarCategorias();
             
-            // Debug: mostrar puertas cargadas
             addDebug(`=== PUERTAS CARGADAS (${puertasDB.length}) ===`);
             const puertasTamesis = puertasDB.filter(p => p.categoria === 'TAMESIS_COLOR');
             const puertasCloe = puertasDB.filter(p => p.categoria === 'CLOE');
             addDebug(`TAMESIS_COLOR: ${puertasTamesis.length} puertas`);
             addDebug(`CLOE: ${puertasCloe.length} puertas`);
-            puertasDB.forEach(p => {
-                addDebug(`  - ${p.categoria} | ${p.color || 'sin color'} | ${p.nombre} | ${p.ancho_mm}x${p.alto_mm} = ${p.precio_venta}€`);
-            });
             
         } catch (err) {
             estadoDatos.innerHTML = `❌ Error: ${err.message}`;
@@ -562,9 +612,11 @@
         if (isNaN(cantidad) || cantidad <= 0) return;
         
         const modeloPuerta = getModeloPuertaSeleccionado();
+        const tipoPata = getTipoPataSeleccionado();
         
         addDebug(`\n=== NUEVO ELEMENTO: ${cantidad} x ${articuloSeleccionado.nombre} ===`);
-        addDebug(`🚪 Modelo de puerta seleccionado: ${modeloPuerta}`);
+        addDebug(`🚪 Modelo de puerta: ${modeloPuerta}`);
+        addDebug(`🔩 Tipo de pata seleccionado: ${tipoPata}`);
         
         // Módulo
         presupuestoActual.push({
@@ -578,14 +630,14 @@
             tipo: 'modulo'
         });
         
-        // Puertas con precio REAL desde la DB
+        // Puertas
         const puerta = calcularPuertas(articuloSeleccionado, cantidad, modeloPuerta);
         const totalPuertas = puerta.numPuertas * cantidad;
         
         const textoColor = getTextoColorPuerta(modeloPuerta);
         const colorDisplay = modeloPuerta === 'TAMESIS_COLOR' ? textoColor : (articuloSeleccionado.color || '');
         
-        if (totalPuertas > 0) {
+        if (totalPuertas > 0 && puerta.precioPuerta > 0) {
             presupuestoActual.push({
                 categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`,
                 color: colorDisplay,
@@ -597,12 +649,21 @@
                 tipo: 'puerta'
             });
             addDebug(`🚪 AÑADIDAS: ${totalPuertas} puertas ${modeloPuerta} a ${puerta.precioPuerta}€/u = ${(totalPuertas * puerta.precioPuerta).toFixed(2)}€`);
-        } else {
-            addDebug(`⚠️ No se calcularon puertas`);
+        } else if (totalPuertas > 0) {
+            presupuestoActual.push({
+                categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`,
+                color: colorDisplay,
+                nombre: `⚠️ SIN PRECIO - ${puerta.nombrePuerta}`,
+                medida: `${puerta.anchoPuerta}×${puerta.altoPuerta} mm`,
+                cantidad: totalPuertas,
+                precioUnitario: 0,
+                total: 0,
+                tipo: 'puerta'
+            });
         }
         
-        // PATAS
-        const patas = agregarPatas(articuloSeleccionado, cantidad);
+        // PATAS (usa el selector del usuario)
+        const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata);
         if (patas) {
             presupuestoActual.push({
                 categoria: "🔩 HERRAJES",
@@ -616,7 +677,7 @@
             });
         }
         
-        // COLGADOR
+        // COLGADOR (solo para módulos ALTOS)
         const colgador = agregarColgador(articuloSeleccionado, cantidad);
         if (colgador) {
             presupuestoActual.push({
