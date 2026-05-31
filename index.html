@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presupuestador de Cocinas - Tamesis/Cloe</title>
+    <title>Presupuestador de Cocinas - Tamesis / Cloe</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -99,6 +99,7 @@
         .color-encargo {
             color: #f59e0b;
             font-style: italic;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -138,12 +139,12 @@
                 </div>
             </div>
 
-            <!-- Selector de modelo de puerta (Tamesis o Cloe) -->
+            <!-- Selector de modelo de puerta -->
             <div class="modelo-selector">
                 <label>🚪 Modelo de Puerta:</label>
                 <div class="modelo-label">
                     <label>
-                        <input type="radio" name="modeloPuerta" value="TAMESIS" checked> 
+                        <input type="radio" name="modeloPuerta" value="TAMESIS_COLOR" checked> 
                         🎨 Tamesis (color a elegir, de encargo)
                     </label>
                     <label>
@@ -151,7 +152,7 @@
                         🌸 Cloe
                     </label>
                 </div>
-                <small style="color: #666;">⚠️ El precio de la puerta se calculará según el modelo seleccionado</small>
+                <small style="color: #666;">⚠️ El precio se tomará de la columna precio_venta según el modelo (categoria)</small>
             </div>
 
             <div class="grid-3" style="margin-top: 15px;">
@@ -199,8 +200,8 @@
 <script>
     const EXCEL_URL = "https://montoyeta-star.github.io/bdestaeslabuena/modulos.xlsx";
     
-    let productosDB = [];
-    let puertasDB = [];
+    let productosDB = [];      // Módulos
+    let puertasDB = [];        // Puertas (con categoria = CLOE o TAMESIS_COLOR)
     let presupuestoActual = [];
     let articuloSeleccionado = null;
 
@@ -231,11 +232,11 @@
         for (let radio of radios) {
             if (radio.checked) return radio.value;
         }
-        return 'TAMESIS';
+        return 'TAMESIS_COLOR';
     }
 
     function getTextoColorPuerta(modelo) {
-        if (modelo === 'TAMESIS') {
+        if (modelo === 'TAMESIS_COLOR') {
             return '🎨 A ELEGIR, DE ENCARGO';
         }
         return 'CLOE';
@@ -324,7 +325,7 @@
     }
 
     // ============================================================
-    // FUNCIÓN CORREGIDA: calcularPuertas con precio REAL desde DB
+    // FUNCIÓN CORREGIDA: usa categoria como modelo y precio_venta real
     // ============================================================
     function calcularPuertas(modulo, cantidad, modeloPuerta) {
         const ancho = modulo.ancho_mm;
@@ -348,42 +349,28 @@
         anchoPuerta = Math.round(anchoPuerta);
         altoPuerta = Math.round(altoPuerta);
         
-        // Buscar puerta REAL en la base de datos por modelo y medidas
+        // Buscar puerta en la DB por categoria (modelo) + medidas
         let precioPuerta = 0;
         let nombrePuerta = `Puerta ${modeloPuerta} ${anchoPuerta}x${altoPuerta} mm`;
+        let colorPuerta = '';
         let puertaEncontrada = null;
         
-        // Buscar coincidencia exacta por modelo + medidas
         for (let p of puertasDB) {
-            const modeloPuertaDB = (p.color || '').toUpperCase();
-            if (modeloPuertaDB === modeloPuerta &&
+            const modeloDB = (p.categoria || '').toUpperCase();
+            if (modeloDB === modeloPuerta &&
                 Math.abs(p.ancho_mm - anchoPuerta) <= 2 && 
                 Math.abs(p.alto_mm - altoPuerta) <= 2) {
                 precioPuerta = p.precio_venta;
                 nombrePuerta = p.nombre || `${modeloPuerta} ${anchoPuerta}x${altoPuerta} mm`;
+                colorPuerta = p.color || '';
                 puertaEncontrada = p;
-                addDebug(`✅ Puerta encontrada en DB: ${modeloPuerta} | ${anchoPuerta}x${altoPuerta} = ${precioPuerta}€`);
+                addDebug(`✅ Puerta encontrada: ${modeloPuerta} | ${p.color || 'sin color'} | ${anchoPuerta}x${altoPuerta} = ${precioPuerta}€`);
                 break;
             }
         }
         
-        // Si no encuentra por modelo, buscar por medidas (cualquier modelo)
         if (precioPuerta === 0) {
-            for (let p of puertasDB) {
-                if (Math.abs(p.ancho_mm - anchoPuerta) <= 2 && 
-                    Math.abs(p.alto_mm - altoPuerta) <= 2) {
-                    precioPuerta = p.precio_venta;
-                    nombrePuerta = p.nombre || `${p.color || 'Puerta'} ${anchoPuerta}x${altoPuerta} mm`;
-                    addDebug(`⚠️ Puerta encontrada SIN modelo: ${anchoPuerta}x${altoPuerta} = ${precioPuerta}€`);
-                    break;
-                }
-            }
-        }
-        
-        if (precioPuerta === 0) {
-            addDebug(`❌ No se encontró puerta para medidas ${anchoPuerta}x${altoPuerta} mm con modelo ${modeloPuerta}`);
-            // Precio por defecto si no se encuentra
-            precioPuerta = 0;
+            addDebug(`❌ No se encontró puerta para ${modeloPuerta} con medidas ${anchoPuerta}x${altoPuerta} mm`);
         }
         
         return { 
@@ -392,7 +379,8 @@
             altoPuerta, 
             precioPuerta, 
             nombrePuerta,
-            modelo: modeloPuerta
+            modelo: modeloPuerta,
+            colorPuerta
         };
     }
 
@@ -412,6 +400,7 @@
             puertasDB = [];
             
             for (let item of json) {
+                // Detectar tipo
                 let tipo = '';
                 for (let key in item) {
                     const v = String(item[key] || '').toUpperCase();
@@ -420,14 +409,17 @@
                 }
                 if (!tipo) continue;
                 
+                // Precio venta
                 let precio = 0;
                 for (let key in item) {
-                    if (key.toLowerCase().includes('precio_venta')) {
-                        precio = parseFloat(item[key]) || 0;
+                    const k = key.toLowerCase();
+                    if (k === 'precio_venta') {
+                        precio = parseFloat(String(item[key]).replace(',', '.')) || 0;
                         break;
                     }
                 }
                 
+                // Medidas
                 let ancho = 0, alto = 0, fondo = 0;
                 for (let key in item) {
                     const k = key.toLowerCase();
@@ -436,15 +428,25 @@
                     if (k === 'fondo_cm') fondo = parseFloat(item[key]) || 0;
                 }
                 
-                let categoria = '', nombre = '', color = 'BLANCO';
+                // Campos principales
+                let categoria = '', nombre = '', color = '';
                 for (let key in item) {
                     const k = key.toLowerCase();
-                    if (k === 'categoria') categoria = String(item[key] || '').trim();
+                    if (k === 'categoria') categoria = String(item[key] || '').trim().toUpperCase();
                     if (k === 'nombre') nombre = String(item[key] || '').trim();
-                    if (k === 'color_acabado') color = String(item[key] || 'BLANCO').trim().toUpperCase();
+                    if (k === 'color_acabado') color = String(item[key] || '').trim().toUpperCase();
                 }
                 
-                const obj = { tipo, categoria, color, nombre, alto_mm: alto, ancho_mm: ancho, fondo_mm: fondo, precio_venta: precio };
+                const obj = { 
+                    tipo, 
+                    categoria,  // Para puertas: CLOE o TAMESIS_COLOR
+                    color,      // color_acabado
+                    nombre, 
+                    alto_mm: alto, 
+                    ancho_mm: ancho, 
+                    fondo_mm: fondo, 
+                    precio_venta: precio 
+                };
                 
                 if (tipo === 'MODULO' && categoria && nombre) {
                     productosDB.push(obj);
@@ -463,19 +465,20 @@
             
             cargarCategorias();
             
-            // Debug: mostrar puertas cargadas con sus precios reales
+            // Debug: mostrar puertas cargadas
             addDebug(`=== PUERTAS CARGADAS (${puertasDB.length}) ===`);
-            const puertasTamesis = puertasDB.filter(p => p.color === 'TAMESIS');
-            const puertasCloe = puertasDB.filter(p => p.color === 'CLOE');
-            addDebug(`Tamesis: ${puertasTamesis.length} puertas`);
-            addDebug(`Cloe: ${puertasCloe.length} puertas`);
+            const puertasTamesis = puertasDB.filter(p => p.categoria === 'TAMESIS_COLOR');
+            const puertasCloe = puertasDB.filter(p => p.categoria === 'CLOE');
+            addDebug(`TAMESIS_COLOR: ${puertasTamesis.length} puertas`);
+            addDebug(`CLOE: ${puertasCloe.length} puertas`);
             puertasDB.forEach(p => {
-                addDebug(`  - ${p.color} | ${p.nombre} | ${p.ancho_mm}x${p.alto_mm} = ${p.precio_venta}€`);
+                addDebug(`  - ${p.categoria} | ${p.color || 'sin color'} | ${p.nombre} | ${p.ancho_mm}x${p.alto_mm} = ${p.precio_venta}€`);
             });
             
         } catch (err) {
             estadoDatos.innerHTML = `❌ Error: ${err.message}`;
             loadingMsg.innerHTML = `Error: ${err.message}`;
+            addDebug(`ERROR: ${err.message}`);
         }
     }
 
@@ -543,7 +546,7 @@
             const np = parseFloat(inputPrecio.value);
             if (!isNaN(np) && np >= 0) {
                 articuloSeleccionado.precio_venta = np;
-                alert('✅ Precio modificado');
+                alert('✅ Precio del módulo modificado');
             }
         }
     });
@@ -571,14 +574,17 @@
             tipo: 'modulo'
         });
         
-        // Puertas con precio REAL desde la base de datos
+        // Puertas con precio REAL desde la DB
         const puerta = calcularPuertas(articuloSeleccionado, cantidad, modeloPuerta);
         const totalPuertas = puerta.numPuertas * cantidad;
-        if (totalPuertas > 0 && puerta.precioPuerta > 0) {
-            const textoColor = getTextoColorPuerta(modeloPuerta);
+        
+        const textoColor = getTextoColorPuerta(modeloPuerta);
+        const colorDisplay = modeloPuerta === 'TAMESIS_COLOR' ? textoColor : (articuloSeleccionado.color || '');
+        
+        if (totalPuertas > 0) {
             presupuestoActual.push({
-                categoria: `🚪 PUERTAS (${modeloPuerta})`,
-                color: textoColor,
+                categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`,
+                color: colorDisplay,
                 nombre: puerta.nombrePuerta,
                 medida: `${puerta.anchoPuerta}×${puerta.altoPuerta} mm`,
                 cantidad: totalPuertas,
@@ -587,20 +593,8 @@
                 tipo: 'puerta'
             });
             addDebug(`🚪 AÑADIDAS: ${totalPuertas} puertas ${modeloPuerta} a ${puerta.precioPuerta}€/u = ${(totalPuertas * puerta.precioPuerta).toFixed(2)}€`);
-        } else if (puerta.precioPuerta === 0) {
-            addDebug(`⚠️ ATENCIÓN: No se encontró precio para puerta ${modeloPuerta} con medidas ${puerta.anchoPuerta}x${puerta.altoPuerta}`);
-            // Añadir igualmente con precio 0 para que se vea el error
-            const textoColor = getTextoColorPuerta(modeloPuerta);
-            presupuestoActual.push({
-                categoria: `🚪 PUERTAS (${modeloPuerta})`,
-                color: textoColor,
-                nombre: `⚠️ SIN PRECIO - ${puerta.nombrePuerta}`,
-                medida: `${puerta.anchoPuerta}×${puerta.altoPuerta} mm`,
-                cantidad: totalPuertas,
-                precioUnitario: 0,
-                total: 0,
-                tipo: 'puerta'
-            });
+        } else {
+            addDebug(`⚠️ No se calcularon puertas`);
         }
         
         // PATAS
@@ -655,20 +649,19 @@
             if (item.tipo === 'puerta') clase = 'row-puerta';
             if (item.tipo === 'herraje') clase = 'row-herraje';
             
-            // Aplicar clase especial para el color "A ELEGIR, DE ENCARGO"
             let colorClass = '';
             if (item.color === '🎨 A ELEGIR, DE ENCARGO') colorClass = 'color-encargo';
             
             tablaPresupuesto.innerHTML += `
                 <tr class="${clase} ${colorClass}">
                     <td>${item.categoria}</td>
-                    <td>${item.color || '-'}</p>
-                    <td>${item.nombre}</p>
-                    <td>${item.medida}</p>
-                    <td>${item.cantidad}</p>
+                    <td>${item.color || '-'}</td>
+                    <td>${item.nombre}</td>
+                    <td>${item.medida}</td>
+                    <td>${item.cantidad}</td>
                     <td>${item.precioUnitario.toFixed(2)}€</p>
-                    <td><b>${item.total.toFixed(2)}€</b></p>
-                    <td><button onclick="eliminarElemento(${idx})" style="background:#e53e3e; padding:5px 8px; width:auto;">🗑️</button></p>
+                    <td><b>${item.total.toFixed(2)}€</b></td>
+                    <td><button onclick="eliminarElemento(${idx})" style="background:#e53e3e; padding:5px 8px; width:auto;">🗑️</button></td>
                 </tr>
             `;
         });
