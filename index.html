@@ -190,7 +190,21 @@
     }
 
     // ============================================================
-    // FUNCIÓN DE PATAS - CORREGIDA
+    // FUNCIÓN PARA DETECTAR SI ES MÓDULO ALTO (lleva colgador)
+    // ============================================================
+    function esModuloAlto(modulo) {
+        const nombreModulo = modulo.nombre.toUpperCase();
+        const categoria = modulo.categoria.toUpperCase();
+        
+        // Detectar si es alto por nombre o categoría
+        const esAlto = nombreModulo.includes('ALTO') || categoria.includes('ALTO');
+        
+        addDebug(`🔍 ¿Es alto? ${modulo.nombre} → ${esAlto ? 'SÍ (lleva colgador)' : 'NO'}`);
+        return esAlto;
+    }
+
+    // ============================================================
+    // FUNCIÓN PARA PATAS (SOLO BAJOS)
     // ============================================================
     function agregarPatas(modulo, cantidad) {
         const nombreModulo = modulo.nombre.toUpperCase();
@@ -198,14 +212,19 @@
         
         addDebug(`🔍 Analizando módulo: "${nombreModulo}" | Altura: ${altura}mm`);
         
-        // LISTA CORREGIDA - con las palabras REALES del nombre
+        // SOLO para módulos BAJOS (NO altos)
+        if (esModuloAlto(modulo)) {
+            addDebug(`❌ Es módulo ALTO → NO lleva patas`);
+            return null;
+        }
+        
+        // Lista de módulos bajos que llevan patas
         const llevaPatasSiContiene = [
             'BAJOS ALMACENAJE',
             'BAJOS_FREGADERO',
             'BAJO RINCON L',
             'ESCOBERO',
-            'BAJO HORNO',
-            'COLUMNA HM'
+            'BAJO HORNO'
         ];
         
         let llevaPatas = false;
@@ -218,7 +237,7 @@
         }
         
         if (!llevaPatas) {
-            addDebug(`❌ NO lleva patas (no coincide con ninguna palabra clave)`);
+            addDebug(`❌ NO lleva patas (no coincide con palabras clave de bajos)`);
             return null;
         }
         
@@ -246,6 +265,27 @@
             cantidad: totalPatas,
             precioUnitario: precioPata,
             total: totalPatas * precioPata
+        };
+    }
+
+    // ============================================================
+    // FUNCIÓN PARA COLGADOR (SOLO ALTOS)
+    // ============================================================
+    function agregarColgador(modulo, cantidad) {
+        if (!esModuloAlto(modulo)) {
+            return null;
+        }
+        
+        const precioColgador = 4.99;
+        const totalColgadores = cantidad; // 1 colgador por módulo alto
+        
+        addDebug(`📌 AÑADIENDO COLGADOR: ${totalColgadores} x Colgador = ${(totalColgadores * precioColgador).toFixed(2)}€`);
+        
+        return {
+            nombre: 'Colgador',
+            cantidad: totalColgadores,
+            precioUnitario: precioColgador,
+            total: totalColgadores * precioColgador
         };
     }
 
@@ -440,7 +480,7 @@
         // Puertas
         const puerta = calcularPuertas(articuloSeleccionado);
         const totalPuertas = puerta.numPuertas * cantidad;
-        if (totalPuertas > 0) {
+        if (totalPuertas > 0 && puerta.precioPuerta > 0) {
             presupuestoActual.push({
                 categoria: "🚪 PUERTAS",
                 color: articuloSeleccionado.color,
@@ -453,7 +493,7 @@
             });
         }
         
-        // PATAS - la parte importante
+        // PATAS (solo para módulos BAJOS)
         const patas = agregarPatas(articuloSeleccionado, cantidad);
         if (patas) {
             addDebug(`✅ AÑADIENDO PATAS: ${patas.cantidad} x ${patas.nombre}`);
@@ -469,6 +509,22 @@
             });
         } else {
             addDebug(`⚠️ NO SE AÑADIERON PATAS`);
+        }
+        
+        // COLGADOR (solo para módulos ALTOS)
+        const colgador = agregarColgador(articuloSeleccionado, cantidad);
+        if (colgador) {
+            addDebug(`✅ AÑADIENDO COLGADOR: ${colgador.cantidad} x ${colgador.nombre}`);
+            presupuestoActual.push({
+                categoria: "🔩 HERRAJES",
+                color: '',
+                nombre: colgador.nombre,
+                medida: "1 por módulo",
+                cantidad: colgador.cantidad,
+                precioUnitario: colgador.precioUnitario,
+                total: colgador.total,
+                tipo: 'herraje'
+            });
         }
         
         actualizarTabla();
@@ -500,7 +556,7 @@
                     <td>${item.nombre}</td>
                     <td>${item.medida}</td>
                     <td>${item.cantidad}</td>
-                    <td>${item.precioUnitario.toFixed(2)}€</p>
+                    <td>${item.precioUnitario.toFixed(2)}€</td>
                     <td><b>${item.total.toFixed(2)}€</b></td>
                     <td><button onclick="eliminarElemento(${idx})" style="background:#e53e3e; padding:5px 8px; width:auto;">🗑️</button></td>
                 </tr>
