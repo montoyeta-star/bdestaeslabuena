@@ -8,167 +8,374 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 30px 20px;
         }
         .container {
-            max-width: 1300px;
+            max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            background: #ffffff;
+            border-radius: 32px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
         }
-        h1 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-bottom: 20px; }
-        h2 { color: #2c3e50; margin-bottom: 15px; font-size: 1.2rem; }
+        
+        /* Header */
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e1e2f 0%, #3b3b5c 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1::before {
+            content: "🍳";
+            font-size: 2rem;
+            background: none;
+            -webkit-background-clip: unset;
+            color: #e67e22;
+        }
+        h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         .section {
-            margin-bottom: 25px;
-            padding: 20px;
-            background: #fafafa;
-            border-radius: 8px;
+            margin-bottom: 28px;
+            padding: 24px;
+            background: #f8fafc;
+            border-radius: 20px;
             border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
         }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; color: #4a5568; }
+        .section:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        
+        /* Grids */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        
+        /* Formularios */
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
         select, input, button {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
             font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #e67e22;
+            box-shadow: 0 0 0 3px rgba(230,126,34,0.1);
         }
         button {
-            background-color: #3182ce;
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
             color: white;
             border: none;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            border-radius: 14px;
+            transition: all 0.2s ease;
         }
-        button:hover { background-color: #2b6cb0; }
-        .btn-add { background-color: #38a169; margin-top: 22px; }
-        .btn-add:hover { background-color: #2f855a; }
-        .btn-danger { background-color: #e53e3e; }
-        .btn-danger:hover { background-color: #c53030; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #edf2f7; }
-        .total-box { text-align: right; font-size: 1.5em; margin-top: 20px; font-weight: bold; }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(230,126,34,0.3);
+        }
+        .btn-add {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+            margin-top: 28px;
+        }
+        .btn-add:hover {
+            box-shadow: 0 8px 20px rgba(39,174,96,0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        }
+        
+        /* Tabla */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 13px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tr:hover td {
+            background-color: #fef9f0;
+        }
+        
+        /* ESTILOS PARA FILAS DE MÓDULO PRINCIPAL */
+        .row-modulo {
+            background-color: #ffffff;
+            border-left: 4px solid #e67e22;
+        }
+        .row-modulo td {
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            color: #1e293b !important;
+            background-color: #fffaf5;
+            border-bottom: 2px solid #fde68a;
+        }
+        .row-modulo td:first-child {
+            border-left: none;
+        }
+        
+        /* Estilos para puertas y herrajes (más pequeños) */
+        .row-puerta td, .row-herraje td {
+            font-size: 12.5px;
+            color: #475569;
+        }
+        .row-puerta { background-color: #f0f9ff; }
+        .row-herraje { background-color: #f0fdf4; }
+        .color-encargo {
+            color: #e67e22;
+            font-style: italic;
+            font-weight: 600;
+        }
+        
+        /* Total Box */
+        .total-container {
+            margin-top: 24px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 20px;
+            padding: 24px;
+            color: white;
+        }
+        .total-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .total-line:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .total-line.grand-total {
+            padding-top: 16px;
+            margin-top: 8px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            border-top: 2px solid #e67e22;
+            border-bottom: none;
+        }
+        .total-label {
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        .total-amount {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .grand-total .total-label {
+            font-size: 1.2rem;
+            opacity: 1;
+        }
+        .grand-total .total-amount {
+            font-size: 1.8rem;
+            color: #f39c12;
+        }
+        
+        /* Status Bar */
         .status-bar {
-            background-color: #e6f7ff;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, #e8f4f8 0%, #d4eaf1 100%);
+            padding: 14px 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 1px solid #bcd9e6;
         }
-        .status-loaded { color: #38a169; font-weight: bold; }
-        .status-not-loaded { color: #e53e3e; font-weight: bold; }
-        .loading { text-align: center; padding: 30px; color: #3182ce; }
-        .row-puerta { background-color: #f0f9ff; font-style: italic; color: #2b6cb0; }
-        .row-herraje { background-color: #f0fdf4; font-style: italic; color: #2f855a; }
-        .debug-box {
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-top: 15px;
-            font-size: 12px;
-            font-family: monospace;
-            display: none;
+        .status-loaded {
+            color: #27ae60;
+            font-weight: 700;
+            background: rgba(39,174,96,0.15);
+            padding: 6px 14px;
+            border-radius: 40px;
         }
-        .modelo-selector {
-            background: #fef3c7;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border: 1px solid #f59e0b;
+        .status-not-loaded {
+            color: #e74c3c;
+            font-weight: 700;
+            background: rgba(231,76,60,0.1);
+            padding: 6px 14px;
+            border-radius: 40px;
+        }
+        
+        /* Selectores especiales */
+        .patas-selector, .modelo-selector {
+            border-radius: 20px;
+            padding: 18px 20px;
         }
         .patas-selector {
-            background: #e0f2fe;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #38bdf8;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            border: 1px solid #c7d2fe;
+            margin-bottom: 24px;
         }
-        .patas-label {
+        .modelo-selector {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1px solid #fde68a;
+            margin: 20px 0 0 0;
+        }
+        .patas-label, .modelo-label {
             display: flex;
-            gap: 20px;
+            gap: 28px;
             align-items: center;
-            margin-top: 5px;
+            margin-top: 12px;
             flex-wrap: wrap;
         }
-        .patas-label label {
+        .patas-label label, .modelo-label label {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            font-weight: normal;
+            gap: 8px;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: normal;
             cursor: pointer;
+            padding: 8px 16px;
+            background: white;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
         }
-        .patas-label input {
+        .patas-label label:hover, .modelo-label label:hover {
+            border-color: #e67e22;
+            background: #fffaf5;
+        }
+        .patas-label input, .modelo-label input {
             width: auto;
             margin: 0;
+            transform: scale(1.1);
+            accent-color: #e67e22;
         }
-        .modelo-label {
+        
+        /* Botones acción */
+        .action-buttons {
             display: flex;
-            gap: 20px;
-            align-items: center;
-            margin-top: 5px;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
         }
-        .modelo-label input {
+        .action-buttons button {
             width: auto;
-            margin-right: 5px;
+            padding: 10px 24px;
         }
-        @media print { .no-print { display: none !important; } }
-        .color-encargo {
-            color: #f59e0b;
-            font-style: italic;
-            font-weight: bold;
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #e67e22;
+            font-weight: 500;
         }
         .info-text {
             font-size: 12px;
-            color: #666;
-            margin-top: 8px;
+            color: #64748b;
+            margin-top: 12px;
+        }
+        .debug-box {
+            background: #1e293b;
+            color: #a5f3c3;
+            border-radius: 16px;
+            padding: 16px;
+            font-family: 'Monaco', monospace;
+            font-size: 11px;
+            margin-top: 20px;
+        }
+        
+        @media print { 
+            .no-print { display: none !important; } 
+            .container { padding: 20px; box-shadow: none; }
+            .total-container { background: #f8fafc; color: #1e293b; border: 1px solid #e2e8f0; }
+            .grand-total .total-amount { color: #e67e22; }
+        }
+        @media (max-width: 768px) {
+            .grid-3 { grid-template-columns: 1fr; gap: 12px; }
+            .patas-label, .modelo-label { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .container { padding: 20px; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🏠 Presupuestador de Cocinas - Tamesis / Cloe</h1>
+    <h1>Presupuestador de Cocinas</h1>
 
     <div class="status-bar no-print">
-        <span>📊 Estado:</span>
+        <span>📊 Sistema de presupuestación</span>
         <span id="estadoDatos" class="status-not-loaded">Cargando datos...</span>
     </div>
 
-    <div id="loadingMsg" class="loading">⏳ Cargando archivo de productos...</div>
+    <div id="loadingMsg" class="loading">⏳ Cargando catálogo de productos...</div>
 
     <div id="presupuestadorSection" style="display: none;">
-        <!-- Selector de Patas (visible siempre) -->
         <div class="patas-selector no-print">
-            <label>🔩 Tipo de Pata (para módulos que lo permitan):</label>
+            <label>🔩 Configuración de patas</label>
             <div class="patas-label">
                 <label>
                     <input type="radio" name="tipoPata" value="PATA_H10" checked> 
-                    PATA_H10 (1.88€/unidad) - 4 patas por módulo
+                    PATA_H10 · 1,88€/unidad (4 por módulo)
                 </label>
                 <label>
                     <input type="radio" name="tipoPata" value="PATA_H15"> 
-                    PATA_H15 (1.00€/unidad) - 4 patas por módulo
+                    PATA_H15 · 1,00€/unidad (4 por módulo)
                 </label>
                 <label>
                     <input type="radio" name="tipoPata" value="NINGUNA"> 
-                    ❌ Ninguna (sin patas)
+                    ❌ Sin patas
                 </label>
             </div>
-            <div class="info-text">⚠️ Nota: Los módulos ALTOS no llevan patas independientemente de esta selección.</div>
+            <div class="info-text">ℹ️ Los módulos ALTOS no llevan patas independientemente de esta selección.</div>
         </div>
 
         <div class="section">
-            <h2>📦 1. Añadir Elemento</h2>
+            <h2>📦 1. Añadir elemento</h2>
             <div class="grid-3">
                 <div>
                     <label>📂 Categoría</label>
@@ -177,7 +384,7 @@
                     </select>
                 </div>
                 <div>
-                    <label>🎨 Color/Acabado</label>
+                    <label>🎨 Color / Acabado</label>
                     <select id="selectColor" disabled>
                         <option value="">-- Primero categoría --</option>
                     </select>
@@ -191,26 +398,26 @@
             </div>
 
             <div class="modelo-selector">
-                <label>🚪 Modelo de Puerta:</label>
+                <label>🚪 Modelo de puerta</label>
                 <div class="modelo-label">
                     <label>
                         <input type="radio" name="modeloPuerta" value="TAMESIS_COLOR" checked> 
-                        🎨 Tamesis (color a elegir, de encargo)
+                        Tamesis · color a elegir, de encargo
                     </label>
                     <label>
                         <input type="radio" name="modeloPuerta" value="CLOE"> 
-                        🌸 Cloe
+                        Cloe
                     </label>
                 </div>
-                <small style="color: #666;">⚠️ El precio se tomará de la columna precio_venta según el modelo (categoria)</small>
+                <div class="info-text">💰 El precio se toma de la columna precio_venta según el modelo y medidas exactas.</div>
             </div>
 
-            <div class="grid-3" style="margin-top: 15px;">
+            <div class="grid-3" style="margin-top: 20px;">
                 <div>
-                    <label>💰 Precio Unitario (€)</label>
-                    <div style="display: flex; gap: 8px;">
+                    <label>💰 Precio unitario (€)</label>
+                    <div style="display: flex; gap: 10px;">
                         <input type="number" id="inputPrecio" step="0.01" disabled style="flex: 1;">
-                        <button id="btnModificarPrecio" style="width: 50px;">✏️</button>
+                        <button id="btnModificarPrecio" style="width: 55px; background: #64748b;">✏️</button>
                     </div>
                 </div>
                 <div>
@@ -218,7 +425,7 @@
                     <input type="number" id="inputCantidad" value="1" min="1">
                 </div>
                 <div>
-                    <button class="btn-add" id="btnAgregar">➕ Añadir</button>
+                    <button class="btn-add" id="btnAgregar" style="margin-top: 28px;">➕ Añadir al presupuesto</button>
                 </div>
             </div>
         </div>
@@ -233,15 +440,30 @@
                     <tbody></tbody>
                 </table>
             </div>
-            <div class="total-box">💰 TOTAL: <span id="totalPrecio">0.00</span> €</div>
-            <div class="no-print" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
-                <button onclick="window.print()" style="width: auto; background-color: #4a5568;">🖨️ Imprimir</button>
-                <button id="btnReset" class="btn-danger" style="width: auto;">🗑️ Resetear</button>
+            
+            <div class="total-container">
+                <div class="total-line">
+                    <span class="total-label">💰 SUBTOTAL</span>
+                    <span class="total-amount" id="subtotalPrecio">0.00 €</span>
+                </div>
+                <div class="total-line">
+                    <span class="total-label">📊 IVA (21%)</span>
+                    <span class="total-amount" id="ivaPrecio">0.00 €</span>
+                </div>
+                <div class="total-line grand-total">
+                    <span class="total-label">💵 TOTAL PRESUPUESTO</span>
+                    <span class="total-amount" id="totalConIva">0.00 €</span>
+                </div>
+            </div>
+            
+            <div class="action-buttons no-print">
+                <button onclick="window.print()" class="btn-secondary">🖨️ Imprimir presupuesto</button>
+                <button id="btnReset" class="btn-danger">🗑️ Resetear todo</button>
             </div>
         </div>
         
-        <div id="debugPanel" class="debug-box no-print">
-            <strong>🔍 DEPURACIÓN:</strong><br>
+        <div id="debugPanel" class="debug-box no-print" style="display: none;">
+            <strong>🔍 DEPURACIÓN</strong><br>
             <div id="debugInfo"></div>
         </div>
     </div>
@@ -249,6 +471,7 @@
 
 <script>
     const EXCEL_URL = "https://montoyeta-star.github.io/bdestaeslabuena/modulos.xlsx";
+    const IVA_PORCENTAJE = 21;
     
     let productosDB = [];
     let puertasDB = [];
@@ -269,7 +492,9 @@
     const btnAgregar = document.getElementById('btnAgregar');
     const btnReset = document.getElementById('btnReset');
     const tablaPresupuesto = document.getElementById('tablaPresupuesto').querySelector('tbody');
-    const totalSpan = document.getElementById('totalPrecio');
+    const subtotalSpan = document.getElementById('subtotalPrecio');
+    const ivaSpan = document.getElementById('ivaPrecio');
+    const totalConIvaSpan = document.getElementById('totalConIva');
 
     function addDebug(msg) {
         debugPanel.style.display = 'block';
@@ -320,27 +545,21 @@
         return esAlto;
     }
 
-    // ============================================================
-    // FUNCIÓN DE PATAS - AHORA USA EL SELECTOR DEL USUARIO
-    // ============================================================
     function agregarPatas(modulo, cantidad, tipoPataSeleccionado) {
         const nombreModulo = modulo.nombre.toUpperCase();
         
         addDebug(`🔍 Analizando patas para: "${nombreModulo}"`);
         
-        // Los módulos ALTOS NO llevan patas NUNCA
         if (esModuloAlto(modulo)) {
-            addDebug(`❌ Es módulo ALTO → NO lleva patas (independientemente del selector)`);
+            addDebug(`❌ Es módulo ALTO → NO lleva patas`);
             return null;
         }
         
-        // Si el usuario seleccionó "NINGUNA"
         if (tipoPataSeleccionado === 'NINGUNA') {
             addDebug(`❌ Usuario seleccionó "NINGUNA" → NO se añaden patas`);
             return null;
         }
         
-        // Verificar si el módulo debe llevar patas (solo módulos bajos)
         const llevaPatasSiContiene = [
             'BAJOS ALMACENAJE',
             'BAJOS_FREGADERO',
@@ -516,7 +735,7 @@
             
             if (productosDB.length === 0) throw new Error('No hay módulos');
             
-            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos | ${puertasDB.length} puertas`;
+            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos · ${puertasDB.length} puertas`;
             estadoDatos.className = 'status-loaded';
             loadingMsg.style.display = 'none';
             presupuestadorSection.style.display = 'block';
@@ -618,7 +837,6 @@
         addDebug(`🚪 Modelo de puerta: ${modeloPuerta}`);
         addDebug(`🔩 Tipo de pata seleccionado: ${tipoPata}`);
         
-        // Módulo
         presupuestoActual.push({
             categoria: articuloSeleccionado.categoria,
             color: articuloSeleccionado.color,
@@ -630,7 +848,6 @@
             tipo: 'modulo'
         });
         
-        // Puertas
         const puerta = calcularPuertas(articuloSeleccionado, cantidad, modeloPuerta);
         const totalPuertas = puerta.numPuertas * cantidad;
         
@@ -662,7 +879,6 @@
             });
         }
         
-        // PATAS (usa el selector del usuario)
         const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata);
         if (patas) {
             presupuestoActual.push({
@@ -677,7 +893,6 @@
             });
         }
         
-        // COLGADOR (solo para módulos ALTOS)
         const colgador = agregarColgador(articuloSeleccionado, cantidad);
         if (colgador) {
             presupuestoActual.push({
@@ -697,7 +912,7 @@
     });
 
     btnReset.addEventListener('click', () => {
-        if (confirm('¿Resetear todo?')) {
+        if (confirm('¿Resetear todo el presupuesto?')) {
             presupuestoActual = [];
             actualizarTabla();
             addDebug('Presupuesto resetado');
@@ -706,11 +921,12 @@
 
     function actualizarTabla() {
         tablaPresupuesto.innerHTML = '';
-        let total = 0;
+        let subtotal = 0;
         
         presupuestoActual.forEach((item, idx) => {
-            total += item.total;
+            subtotal += item.total;
             let clase = '';
+            if (item.tipo === 'modulo') clase = 'row-modulo';
             if (item.tipo === 'puerta') clase = 'row-puerta';
             if (item.tipo === 'herraje') clase = 'row-herraje';
             
@@ -726,12 +942,17 @@
                     <td>${item.cantidad}</td>
                     <td>${item.precioUnitario.toFixed(2)}€</p>
                     <td><b>${item.total.toFixed(2)}€</b></td>
-                    <td><button onclick="eliminarElemento(${idx})" style="background:#e53e3e; padding:5px 8px; width:auto;">🗑️</button></td>
+                    <td><button onclick="eliminarElemento(${idx})" style="background:#e74c3c; padding:6px 12px; width:auto; border-radius:10px;">🗑️</button></td>
                 </tr>
             `;
         });
         
-        totalSpan.innerText = total.toFixed(2);
+        const iva = subtotal * (IVA_PORCENTAJE / 100);
+        const totalConIva = subtotal + iva;
+        
+        subtotalSpan.innerText = subtotal.toFixed(2) + ' €';
+        ivaSpan.innerText = iva.toFixed(2) + ' €';
+        totalConIvaSpan.innerText = totalConIva.toFixed(2) + ' €';
     }
 
     window.eliminarElemento = (idx) => {
