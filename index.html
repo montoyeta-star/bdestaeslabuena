@@ -9,26 +9,29 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%);
+            background: #0a0a0a;
             min-height: 100vh;
             padding: 30px 20px;
         }
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: #ffffff;
+            background: #1a1a1a;
             border-radius: 32px;
             padding: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            border: 1px solid #333;
         }
+        
+        /* Header */
         h1 {
             font-size: 1.8rem;
             font-weight: 600;
-            background: linear-gradient(135deg, #1e1e2f 0%, #3b3b5c 100%);
+            background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            border-bottom: 3px solid #e2e8f0;
+            border-bottom: 3px solid #333;
             padding-bottom: 16px;
             margin-bottom: 24px;
             display: flex;
@@ -45,7 +48,7 @@
         h2 {
             font-size: 1.2rem;
             font-weight: 600;
-            color: #1e293b;
+            color: #e67e22;
             margin-bottom: 16px;
             display: flex;
             align-items: center;
@@ -54,16 +57,24 @@
         .section {
             margin-bottom: 28px;
             padding: 24px;
-            background: #f8fafc;
+            background: #222;
             border-radius: 20px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #333;
+            transition: all 0.2s ease;
         }
+        .section:hover {
+            border-color: #e67e22;
+        }
+        
+        /* Grids */
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        
+        /* Formularios */
         label {
             font-weight: 600;
             display: block;
             margin-bottom: 8px;
-            color: #334155;
+            color: #ccc;
             font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -71,15 +82,18 @@
         select, input, button {
             width: 100%;
             padding: 12px 14px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid #444;
             border-radius: 14px;
             font-size: 14px;
             font-family: inherit;
-            background: white;
+            transition: all 0.2s ease;
+            background: #2a2a2a;
+            color: white;
         }
         select:focus, input:focus {
             outline: none;
             border-color: #e67e22;
+            box-shadow: 0 0 0 3px rgba(230,126,34,0.2);
         }
         button {
             background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
@@ -87,9 +101,11 @@
             border: none;
             cursor: pointer;
             font-weight: 600;
+            border-radius: 14px;
         }
         button:hover {
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(230,126,34,0.3);
         }
         .btn-add {
             background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
@@ -99,75 +115,162 @@
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
         }
         .btn-secondary {
-            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            background: linear-gradient(135deg, #555 0%, #333 100%);
         }
+        
+        /* Tabla */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 16px;
-            font-size: 13px;
+            border-radius: 16px;
+            overflow: hidden;
         }
         th, td {
-            padding: 14px 12px;
+            padding: 12px 10px;
             text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #333;
         }
         th {
-            background: #f1f5f9;
+            background: #2a2a2a;
             font-weight: 600;
-            color: #334155;
+            color: #e67e22;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 10px;
         }
+        tr:hover td {
+            background-color: #2a2a2a;
+        }
+        
+        /* ESTILOS PARA FILAS DE MÓDULO PRINCIPAL */
         .row-modulo {
-            background-color: #fffaf5;
+            background-color: #1e1e1e;
             border-left: 4px solid #e67e22;
         }
         .row-modulo td {
-            font-weight: 600;
-            color: #1e293b;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            color: #f0f0f0 !important;
+            background-color: #1e1e1e;
+            border-bottom: 2px solid #e67e22;
+            padding: 14px 12px !important;
         }
-        .row-puerta { background-color: #f0f9ff; }
-        .row-herraje { background-color: #f0fdf4; }
-        .color-encargo { color: #e67e22; font-style: italic; font-weight: 600; }
+        
+        /* Estilos para puertas y herrajes - MÁS COMPACTOS y CON SANGRÍA */
+        .row-puerta td, .row-herraje td {
+            font-size: 10px !important;
+            color: #aaa;
+            padding: 6px 8px !important;
+        }
+        
+        /* Sangría en la primera columna de puertas y herrajes */
+        .row-puerta td:first-child, .row-herraje td:first-child {
+            padding-left: 24px !important;
+        }
+        
+        .row-puerta { background-color: #1a2a2a; }
+        .row-herraje { background-color: #1a2a1a; }
+        .color-encargo {
+            color: #f39c12 !important;
+            font-style: italic;
+            font-weight: 600;
+        }
+        
+        /* Total Box */
         .total-container {
             margin-top: 24px;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background: linear-gradient(135deg, #111 0%, #0a0a0a 100%);
             border-radius: 20px;
             padding: 24px;
             color: white;
+            border: 1px solid #333;
         }
         .total-line {
             display: flex;
             justify-content: space-between;
+            align-items: baseline;
             padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid #333;
+        }
+        .total-line:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
         }
         .total-line.grand-total {
             padding-top: 16px;
+            margin-top: 8px;
             font-size: 1.4rem;
+            font-weight: 700;
             border-top: 2px solid #e67e22;
             border-bottom: none;
         }
-        .grand-total .total-amount { color: #f39c12; font-size: 1.8rem; font-weight: 700; }
+        .total-label {
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        .total-amount {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .grand-total .total-label {
+            font-size: 1.2rem;
+            opacity: 1;
+        }
+        .grand-total .total-amount {
+            font-size: 1.8rem;
+            color: #f39c12;
+        }
+        
+        /* Status Bar */
         .status-bar {
-            background: #e8f4f8;
+            background: #222;
             padding: 14px 20px;
             border-radius: 16px;
             margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            border: 1px solid #444;
+            color: #ccc;
         }
-        .status-loaded { color: #27ae60; font-weight: 700; background: rgba(39,174,96,0.15); padding: 6px 14px; border-radius: 40px; }
-        .status-not-loaded { color: #e74c3c; font-weight: 700; background: rgba(231,76,60,0.1); padding: 6px 14px; border-radius: 40px; }
+        .status-loaded {
+            color: #27ae60;
+            font-weight: 700;
+            background: rgba(39,174,96,0.15);
+            padding: 6px 14px;
+            border-radius: 40px;
+        }
+        .status-not-loaded {
+            color: #e74c3c;
+            font-weight: 700;
+            background: rgba(231,76,60,0.1);
+            padding: 6px 14px;
+            border-radius: 40px;
+        }
+        
+        /* Selectores especiales */
         .patas-selector, .modelo-selector {
             border-radius: 20px;
             padding: 18px 20px;
+        }
+        .patas-selector {
+            background: #1a1a2a;
+            border: 1px solid #334;
             margin-bottom: 24px;
         }
-        .patas-selector { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); }
-        .modelo-selector { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); margin: 20px 0 0 0; }
+        .modelo-selector {
+            background: #2a1a1a;
+            border: 1px solid #633;
+            margin: 20px 0 0 0;
+        }
         .patas-label, .modelo-label {
             display: flex;
             gap: 28px;
+            align-items: center;
             margin-top: 12px;
             flex-wrap: wrap;
         }
@@ -175,23 +278,76 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: white;
-            padding: 8px 16px;
-            border-radius: 40px;
-            border: 1px solid #e2e8f0;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: normal;
             cursor: pointer;
+            padding: 8px 16px;
+            background: #2a2a2a;
+            border-radius: 40px;
+            border: 1px solid #444;
+            transition: all 0.2s ease;
+            color: #ccc;
         }
+        .patas-label label:hover, .modelo-label label:hover {
+            border-color: #e67e22;
+            background: #333;
+        }
+        .patas-label input, .modelo-label input {
+            width: auto;
+            margin: 0;
+            transform: scale(1.1);
+            accent-color: #e67e22;
+        }
+        
+        /* Botones acción */
         .action-buttons {
             display: flex;
             gap: 12px;
             justify-content: flex-end;
             margin-top: 20px;
         }
-        .action-buttons button { width: auto; padding: 10px 24px; }
-        .loading { text-align: center; padding: 50px; color: #e67e22; }
-        .info-text { font-size: 12px; color: #64748b; margin-top: 12px; }
-        .debug-box { background: #1e293b; color: #a5f3c3; border-radius: 16px; padding: 16px; font-family: monospace; font-size: 11px; margin-top: 20px; }
-        @media print { .no-print { display: none; } }
+        .action-buttons button {
+            width: auto;
+            padding: 10px 24px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #e67e22;
+            font-weight: 500;
+        }
+        .info-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 12px;
+        }
+        .debug-box {
+            background: #0a0a0a;
+            color: #a5f3c3;
+            border-radius: 16px;
+            padding: 16px;
+            font-family: 'Monaco', monospace;
+            font-size: 11px;
+            margin-top: 20px;
+            border: 1px solid #333;
+        }
+        
+        @media print { 
+            .no-print { display: none !important; } 
+            body { background: white; }
+            .container { padding: 20px; background: white; box-shadow: none; }
+            .total-container { background: #f8fafc; color: #1e293b; border: 1px solid #ddd; }
+            .grand-total .total-amount { color: #e67e22; }
+            .row-modulo td { color: #1e293b !important; background-color: #fffaf5; }
+            .row-puerta td, .row-herraje td { font-size: 10px !important; padding: 4px 6px !important; }
+        }
+        @media (max-width: 768px) {
+            .grid-3 { grid-template-columns: 1fr; gap: 12px; }
+            .patas-label, .modelo-label { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .container { padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -247,7 +403,7 @@
                     <label>💰 Precio unitario (€)</label>
                     <div style="display: flex; gap: 10px;">
                         <input type="number" id="inputPrecio" step="0.01" disabled style="flex: 1;">
-                        <button id="btnModificarPrecio" style="width: 55px; background: #64748b;">✏️</button>
+                        <button id="btnModificarPrecio" style="width: 55px; background: #555;">✏️</button>
                     </div>
                 </div>
                 <div>
@@ -264,7 +420,9 @@
             <h2>📋 2. Presupuesto</h2>
             <div style="overflow-x: auto;">
                 <table id="tablaPresupuesto">
-                    <thead><tr><th>Categoría</th><th>Color</th><th>Artículo</th><th>Medidas</th><th>Cant.</th><th>P.Unitario</th><th>Total</th><th></th></tr></thead>
+                    <thead>
+                        <tr><th>Categoría</th><th>Color</th><th>Artículo</th><th>Medidas</th><th>Cant.</th><th>P.Unitario</th><th>Total</th><th></th></tr>
+                    </thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -292,7 +450,7 @@
     
     let productosDB = [];
     let puertasDB = [];
-    let herrajesDB = {};  // Guardará precios de PATA_H10, PATA_H15, BISAGRA_SENSYS, Colgador
+    let herrajesDB = {};
     let presupuestoActual = [];
     let articuloSeleccionado = null;
 
@@ -333,22 +491,17 @@
         return 'PATA_H10';
     }
 
-    // REGLA SIMPLE: Todos los módulos llevan patas EXCEPTO los ALTOS (categoría 'ALTOS')
     function debeLlevarPatas(modulo) {
         const categoria = modulo.categoria.toUpperCase();
-        const noLlevaPatas = categoria === 'ALTOS';
-        addDebug(`🔍 ${modulo.nombre} (cat:${categoria}) → ${noLlevaPatas ? 'NO lleva patas (es ALTO)' : 'SÍ lleva patas'}`);
-        return !noLlevaPatas;
+        return categoria !== 'ALTOS';
     }
 
     function agregarPatas(modulo, cantidad, tipoPataSeleccionado) {
-        // Si el usuario seleccionó "NINGUNA", no añadir patas
         if (tipoPataSeleccionado === 'NINGUNA') {
             addDebug(`❌ Usuario seleccionó "NINGUNA" → NO se añaden patas`);
             return null;
         }
         
-        // Si el módulo NO debe llevar patas (solo ALTOS), no añadir
         if (!debeLlevarPatas(modulo)) {
             return null;
         }
@@ -357,7 +510,7 @@
         const nombrePata = tipoPataSeleccionado;
         const totalPatas = 4 * cantidad;
         
-        addDebug(`📊 AÑADIENDO PATAS: ${totalPatas} x ${nombrePata} (${precioPata.toFixed(2)}€/u) = ${(totalPatas * precioPata).toFixed(2)}€`);
+        addDebug(`📊 PATAS: ${totalPatas} x ${nombrePata} = ${(totalPatas * precioPata).toFixed(2)}€`);
         
         return {
             nombre: nombrePata,
@@ -369,13 +522,12 @@
 
     function agregarColgador(modulo, cantidad) {
         const categoria = modulo.categoria.toUpperCase();
-        // Solo los ALTOS llevan colgador
         if (categoria !== 'ALTOS') return null;
         
         const precioColgador = herrajesDB['Colgador'] || 4.99;
         const totalColgadores = cantidad;
         
-        addDebug(`📌 AÑADIENDO COLGADOR: ${totalColgadores} x Colgador = ${(totalColgadores * precioColgador).toFixed(2)}€`);
+        addDebug(`📌 COLGADOR: ${totalColgadores} x Colgador = ${(totalColgadores * precioColgador).toFixed(2)}€`);
         
         return {
             nombre: 'Colgador',
@@ -394,7 +546,7 @@
         
         const precioBisagra = herrajesDB['BISAGRA_SENSYS'] || 0;
         
-        addDebug(`🚪 Bisagras: ${numBisagrasPorPuerta} x puerta (altura ${alturaPuerta}mm) → ${totalBisagras} x ${precioBisagra.toFixed(2)}€ = ${(totalBisagras * precioBisagra).toFixed(2)}€`);
+        addDebug(`🚪 BISAGRAS: ${numBisagrasPorPuerta}/puerta → ${totalBisagras} x ${precioBisagra.toFixed(2)}€ = ${(totalBisagras * precioBisagra).toFixed(2)}€`);
         
         return {
             nombre: `Bisagra Sensys (${numBisagrasPorPuerta} ud/puerta)`,
@@ -598,7 +750,7 @@
         
         addDebug(`\n=== ${cantidad} x ${articuloSeleccionado.nombre} (${articuloSeleccionado.categoria}) ===`);
         
-        // Añadir módulo
+        // Módulo
         presupuestoActual.push({
             categoria: articuloSeleccionado.categoria,
             color: articuloSeleccionado.color,
@@ -610,7 +762,7 @@
             tipo: 'modulo'
         });
         
-        // Calcular puertas
+        // Puertas
         const puerta = calcularPuertas(articuloSeleccionado, cantidad, modeloPuerta);
         const totalPuertas = puerta.numPuertas * cantidad;
         const colorDisplay = modeloPuerta === 'TAMESIS_COLOR' ? '🎨 A ELEGIR, DE ENCARGO' : (articuloSeleccionado.color || '');
@@ -627,7 +779,7 @@
                 tipo: 'puerta'
             });
             
-            // Añadir bisagras
+            // Bisagras
             const bisagras = calcularBisagras(puerta, totalPuertas);
             if (bisagras && bisagras.cantidad > 0 && bisagras.precioUnitario > 0) {
                 presupuestoActual.push({
@@ -643,7 +795,7 @@
             }
         }
         
-        // Añadir patas (TODOS excepto ALTOS)
+        // Patas
         const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata);
         if (patas) {
             presupuestoActual.push({
@@ -658,7 +810,7 @@
             });
         }
         
-        // Añadir colgador (solo ALTOS)
+        // Colgador
         const colgador = agregarColgador(articuloSeleccionado, cantidad);
         if (colgador) {
             presupuestoActual.push({
@@ -700,9 +852,9 @@
                     <td>${item.nombre}</td>
                     <td>${item.medida}</td>
                     <td>${item.cantidad}</td>
-                    <td>${item.precioUnitario.toFixed(2)}€</td>
-                    <td><b>${item.total.toFixed(2)}€</b></td>
-                    <td><button onclick="eliminarElemento(${idx})" style="background:#e74c3c; padding:6px 12px; width:auto; border-radius:10px;">🗑️</button></td>
+                    <td>${item.precioUnitario.toFixed(2)}€</p>
+                    <td><b>${item.total.toFixed(2)}€</b></p>
+                    <td><button onclick="eliminarElemento(${idx})" style="background:#e74c3c; padding:6px 12px; width:auto; border-radius:10px;">🗑️</button></p>
                 </tr>
             `;
         });
