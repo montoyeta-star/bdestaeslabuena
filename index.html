@@ -21,8 +21,6 @@
             padding: 32px;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
         }
-        
-        /* Header */
         h1 {
             font-size: 1.8rem;
             font-weight: 600;
@@ -59,18 +57,8 @@
             background: #f8fafc;
             border-radius: 20px;
             border: 1px solid #e2e8f0;
-            transition: all 0.2s ease;
         }
-        .section:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-        
-        /* Grids */
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        
-        /* Formularios */
         label {
             font-weight: 600;
             display: block;
@@ -87,13 +75,11 @@
             border-radius: 14px;
             font-size: 14px;
             font-family: inherit;
-            transition: all 0.2s ease;
             background: white;
         }
         select:focus, input:focus {
             outline: none;
             border-color: #e67e22;
-            box-shadow: 0 0 0 3px rgba(230,126,34,0.1);
         }
         button {
             background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
@@ -101,19 +87,13 @@
             border: none;
             cursor: pointer;
             font-weight: 600;
-            border-radius: 14px;
-            transition: all 0.2s ease;
         }
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(230,126,34,0.3);
         }
         .btn-add {
             background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
             margin-top: 28px;
-        }
-        .btn-add:hover {
-            box-shadow: 0 8px 20px rgba(39,174,96,0.3);
         }
         .btn-danger {
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
@@ -121,15 +101,11 @@
         .btn-secondary {
             background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
         }
-        
-        /* Tabla */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 16px;
             font-size: 13px;
-            border-radius: 16px;
-            overflow: hidden;
         }
         th, td {
             padding: 14px 12px;
@@ -140,44 +116,18 @@
             background: #f1f5f9;
             font-weight: 600;
             color: #334155;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        tr:hover td {
-            background-color: #fef9f0;
-        }
-        
-        /* ESTILOS PARA FILAS DE MÓDULO PRINCIPAL */
         .row-modulo {
-            background-color: #ffffff;
+            background-color: #fffaf5;
             border-left: 4px solid #e67e22;
         }
         .row-modulo td {
-            font-size: 15px !important;
-            font-weight: 600 !important;
-            color: #1e293b !important;
-            background-color: #fffaf5;
-            border-bottom: 2px solid #fde68a;
-        }
-        .row-modulo td:first-child {
-            border-left: none;
-        }
-        
-        /* Estilos para puertas y herrajes (más pequeños) */
-        .row-puerta td, .row-herraje td {
-            font-size: 12.5px;
-            color: #475569;
+            font-weight: 600;
+            color: #1e293b;
         }
         .row-puerta { background-color: #f0f9ff; }
         .row-herraje { background-color: #f0fdf4; }
-        .color-encargo {
-            color: #e67e22;
-            font-style: italic;
-            font-weight: 600;
-        }
-        
-        /* Total Box */
+        .color-encargo { color: #e67e22; font-style: italic; font-weight: 600; }
         .total-container {
             margin-top: 24px;
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -188,86 +138,36 @@
         .total-line {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
             padding: 12px 0;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .total-line:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
         .total-line.grand-total {
             padding-top: 16px;
-            margin-top: 8px;
             font-size: 1.4rem;
-            font-weight: 700;
             border-top: 2px solid #e67e22;
             border-bottom: none;
         }
-        .total-label {
-            font-size: 1rem;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-        .total-amount {
-            font-size: 1.3rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        .grand-total .total-label {
-            font-size: 1.2rem;
-            opacity: 1;
-        }
-        .grand-total .total-amount {
-            font-size: 1.8rem;
-            color: #f39c12;
-        }
-        
-        /* Status Bar */
+        .grand-total .total-amount { color: #f39c12; font-size: 1.8rem; font-weight: 700; }
         .status-bar {
-            background: linear-gradient(135deg, #e8f4f8 0%, #d4eaf1 100%);
+            background: #e8f4f8;
             padding: 14px 20px;
             border-radius: 16px;
             margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            border: 1px solid #bcd9e6;
         }
-        .status-loaded {
-            color: #27ae60;
-            font-weight: 700;
-            background: rgba(39,174,96,0.15);
-            padding: 6px 14px;
-            border-radius: 40px;
-        }
-        .status-not-loaded {
-            color: #e74c3c;
-            font-weight: 700;
-            background: rgba(231,76,60,0.1);
-            padding: 6px 14px;
-            border-radius: 40px;
-        }
-        
-        /* Selectores especiales */
+        .status-loaded { color: #27ae60; font-weight: 700; background: rgba(39,174,96,0.15); padding: 6px 14px; border-radius: 40px; }
+        .status-not-loaded { color: #e74c3c; font-weight: 700; background: rgba(231,76,60,0.1); padding: 6px 14px; border-radius: 40px; }
         .patas-selector, .modelo-selector {
             border-radius: 20px;
             padding: 18px 20px;
-        }
-        .patas-selector {
-            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-            border: 1px solid #c7d2fe;
             margin-bottom: 24px;
         }
-        .modelo-selector {
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-            border: 1px solid #fde68a;
-            margin: 20px 0 0 0;
-        }
+        .patas-selector { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); }
+        .modelo-selector { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); margin: 20px 0 0 0; }
         .patas-label, .modelo-label {
             display: flex;
             gap: 28px;
-            align-items: center;
             margin-top: 12px;
             flex-wrap: wrap;
         }
@@ -275,71 +175,23 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-weight: 500;
-            text-transform: none;
-            letter-spacing: normal;
-            cursor: pointer;
-            padding: 8px 16px;
             background: white;
+            padding: 8px 16px;
             border-radius: 40px;
             border: 1px solid #e2e8f0;
-            transition: all 0.2s ease;
+            cursor: pointer;
         }
-        .patas-label label:hover, .modelo-label label:hover {
-            border-color: #e67e22;
-            background: #fffaf5;
-        }
-        .patas-label input, .modelo-label input {
-            width: auto;
-            margin: 0;
-            transform: scale(1.1);
-            accent-color: #e67e22;
-        }
-        
-        /* Botones acción */
         .action-buttons {
             display: flex;
             gap: 12px;
             justify-content: flex-end;
             margin-top: 20px;
         }
-        .action-buttons button {
-            width: auto;
-            padding: 10px 24px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 50px;
-            color: #e67e22;
-            font-weight: 500;
-        }
-        .info-text {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 12px;
-        }
-        .debug-box {
-            background: #1e293b;
-            color: #a5f3c3;
-            border-radius: 16px;
-            padding: 16px;
-            font-family: 'Monaco', monospace;
-            font-size: 11px;
-            margin-top: 20px;
-        }
-        
-        @media print { 
-            .no-print { display: none !important; } 
-            .container { padding: 20px; box-shadow: none; }
-            .total-container { background: #f8fafc; color: #1e293b; border: 1px solid #e2e8f0; }
-            .grand-total .total-amount { color: #e67e22; }
-        }
-        @media (max-width: 768px) {
-            .grid-3 { grid-template-columns: 1fr; gap: 12px; }
-            .patas-label, .modelo-label { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .container { padding: 20px; }
-        }
+        .action-buttons button { width: auto; padding: 10px 24px; }
+        .loading { text-align: center; padding: 50px; color: #e67e22; }
+        .info-text { font-size: 12px; color: #64748b; margin-top: 12px; }
+        .debug-box { background: #1e293b; color: #a5f3c3; border-radius: 16px; padding: 16px; font-family: monospace; font-size: 11px; margin-top: 20px; }
+        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
@@ -358,18 +210,9 @@
         <div class="patas-selector no-print">
             <label>🔩 Configuración de patas</label>
             <div class="patas-label">
-                <label>
-                    <input type="radio" name="tipoPata" value="PATA_H10" checked> 
-                    PATA_H10 · 1,88€/unidad (4 por módulo)
-                </label>
-                <label>
-                    <input type="radio" name="tipoPata" value="PATA_H15"> 
-                    PATA_H15 · 1,00€/unidad (4 por módulo)
-                </label>
-                <label>
-                    <input type="radio" name="tipoPata" value="NINGUNA"> 
-                    ❌ Sin patas
-                </label>
+                <label><input type="radio" name="tipoPata" value="PATA_H10" checked> PATA_H10 · 4 por módulo</label>
+                <label><input type="radio" name="tipoPata" value="PATA_H15"> PATA_H15 · 4 por módulo</label>
+                <label><input type="radio" name="tipoPata" value="NINGUNA"> ❌ Sin patas</label>
             </div>
             <div class="info-text">ℹ️ Los módulos ALTOS no llevan patas independientemente de esta selección.</div>
         </div>
@@ -379,37 +222,24 @@
             <div class="grid-3">
                 <div>
                     <label>📂 Categoría</label>
-                    <select id="selectCategoria">
-                        <option value="">-- Selecciona --</option>
-                    </select>
+                    <select id="selectCategoria"><option value="">-- Selecciona --</option></select>
                 </div>
                 <div>
                     <label>🎨 Color / Acabado</label>
-                    <select id="selectColor" disabled>
-                        <option value="">-- Primero categoría --</option>
-                    </select>
+                    <select id="selectColor" disabled><option value="">-- Primero categoría --</option></select>
                 </div>
                 <div>
                     <label>📐 Artículo</label>
-                    <select id="selectNombre" disabled>
-                        <option value="">-- Primero color --</option>
-                    </select>
+                    <select id="selectNombre" disabled><option value="">-- Primero color --</option></select>
                 </div>
             </div>
 
             <div class="modelo-selector">
                 <label>🚪 Modelo de puerta</label>
                 <div class="modelo-label">
-                    <label>
-                        <input type="radio" name="modeloPuerta" value="TAMESIS_COLOR" checked> 
-                        Tamesis · color a elegir, de encargo
-                    </label>
-                    <label>
-                        <input type="radio" name="modeloPuerta" value="CLOE"> 
-                        Cloe
-                    </label>
+                    <label><input type="radio" name="modeloPuerta" value="TAMESIS_COLOR" checked> Tamesis · color a elegir</label>
+                    <label><input type="radio" name="modeloPuerta" value="CLOE"> Cloe</label>
                 </div>
-                <div class="info-text">💰 El precio se toma de la columna precio_venta según el modelo y medidas exactas.</div>
             </div>
 
             <div class="grid-3" style="margin-top: 20px;">
@@ -425,7 +255,7 @@
                     <input type="number" id="inputCantidad" value="1" min="1">
                 </div>
                 <div>
-                    <button class="btn-add" id="btnAgregar" style="margin-top: 28px;">➕ Añadir al presupuesto</button>
+                    <button class="btn-add" id="btnAgregar" style="margin-top: 28px;">➕ Añadir</button>
                 </div>
             </div>
         </div>
@@ -434,31 +264,18 @@
             <h2>📋 2. Presupuesto</h2>
             <div style="overflow-x: auto;">
                 <table id="tablaPresupuesto">
-                    <thead>
-                        <tr><th>Categoría</th><th>Color/Acabado</th><th>Artículo</th><th>Medidas</th><th>Cant.</th><th>P.Unitario</th><th>Total</th><th></th></tr>
-                    </thead>
+                    <thead><tr><th>Categoría</th><th>Color</th><th>Artículo</th><th>Medidas</th><th>Cant.</th><th>P.Unitario</th><th>Total</th><th></th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
-            
             <div class="total-container">
-                <div class="total-line">
-                    <span class="total-label">💰 SUBTOTAL</span>
-                    <span class="total-amount" id="subtotalPrecio">0.00 €</span>
-                </div>
-                <div class="total-line">
-                    <span class="total-label">📊 IVA (21%)</span>
-                    <span class="total-amount" id="ivaPrecio">0.00 €</span>
-                </div>
-                <div class="total-line grand-total">
-                    <span class="total-label">💵 TOTAL PRESUPUESTO</span>
-                    <span class="total-amount" id="totalConIva">0.00 €</span>
-                </div>
+                <div class="total-line"><span>💰 SUBTOTAL</span><span id="subtotalPrecio">0.00 €</span></div>
+                <div class="total-line"><span>📊 IVA (21%)</span><span id="ivaPrecio">0.00 €</span></div>
+                <div class="total-line grand-total"><span>💵 TOTAL</span><span id="totalConIva">0.00 €</span></div>
             </div>
-            
             <div class="action-buttons no-print">
-                <button onclick="window.print()" class="btn-secondary">🖨️ Imprimir presupuesto</button>
-                <button id="btnReset" class="btn-danger">🗑️ Resetear todo</button>
+                <button onclick="window.print()" class="btn-secondary">🖨️ Imprimir</button>
+                <button id="btnReset" class="btn-danger">🗑️ Resetear</button>
             </div>
         </div>
         
@@ -475,9 +292,11 @@
     
     let productosDB = [];
     let puertasDB = [];
+    let herrajesDB = {};  // Guardará precios de PATA_H10, PATA_H15, BISAGRA_SENSYS, Colgador
     let presupuestoActual = [];
     let articuloSeleccionado = null;
 
+    // Elementos DOM
     const estadoDatos = document.getElementById('estadoDatos');
     const loadingMsg = document.getElementById('loadingMsg');
     const presupuestadorSection = document.getElementById('presupuestadorSection');
@@ -504,89 +323,41 @@
 
     function getModeloPuertaSeleccionado() {
         const radios = document.getElementsByName('modeloPuerta');
-        for (let radio of radios) {
-            if (radio.checked) return radio.value;
-        }
+        for (let radio of radios) if (radio.checked) return radio.value;
         return 'TAMESIS_COLOR';
     }
 
     function getTipoPataSeleccionado() {
         const radios = document.getElementsByName('tipoPata');
-        for (let radio of radios) {
-            if (radio.checked) return radio.value;
-        }
+        for (let radio of radios) if (radio.checked) return radio.value;
         return 'PATA_H10';
     }
 
-    function getPrecioPata(tipo) {
-        if (tipo === 'PATA_H10') return 1.88;
-        if (tipo === 'PATA_H15') return 1.00;
-        return 0;
-    }
-
-    function getNombrePata(tipo) {
-        if (tipo === 'PATA_H10') return 'PATA_H10';
-        if (tipo === 'PATA_H15') return 'PATA_H15';
-        return '';
-    }
-
-    function getTextoColorPuerta(modelo) {
-        if (modelo === 'TAMESIS_COLOR') {
-            return '🎨 A ELEGIR, DE ENCARGO';
-        }
-        return 'CLOE';
-    }
-
-    function esModuloAlto(modulo) {
-        const nombreModulo = modulo.nombre.toUpperCase();
+    // REGLA SIMPLE: Todos los módulos llevan patas EXCEPTO los ALTOS (categoría 'ALTOS')
+    function debeLlevarPatas(modulo) {
         const categoria = modulo.categoria.toUpperCase();
-        const esAlto = nombreModulo.includes('ALTO') || categoria.includes('ALTO');
-        addDebug(`🔍 ¿Es alto? ${modulo.nombre} → ${esAlto ? 'SÍ (lleva colgador, NO PATAS)' : 'NO'}`);
-        return esAlto;
+        const noLlevaPatas = categoria === 'ALTOS';
+        addDebug(`🔍 ${modulo.nombre} (cat:${categoria}) → ${noLlevaPatas ? 'NO lleva patas (es ALTO)' : 'SÍ lleva patas'}`);
+        return !noLlevaPatas;
     }
 
     function agregarPatas(modulo, cantidad, tipoPataSeleccionado) {
-        const nombreModulo = modulo.nombre.toUpperCase();
-        
-        addDebug(`🔍 Analizando patas para: "${nombreModulo}"`);
-        
-        if (esModuloAlto(modulo)) {
-            addDebug(`❌ Es módulo ALTO → NO lleva patas`);
-            return null;
-        }
-        
+        // Si el usuario seleccionó "NINGUNA", no añadir patas
         if (tipoPataSeleccionado === 'NINGUNA') {
             addDebug(`❌ Usuario seleccionó "NINGUNA" → NO se añaden patas`);
             return null;
         }
         
-        const llevaPatasSiContiene = [
-            'BAJOS ALMACENAJE',
-            'BAJOS_FREGADERO',
-            'BAJO RINCON L',
-            'ESCOBERO',
-            'BAJO HORNO'
-        ];
-        
-        let llevaPatas = false;
-        for (let palabra of llevaPatasSiContiene) {
-            if (nombreModulo.includes(palabra.toUpperCase())) {
-                llevaPatas = true;
-                addDebug(`✅ Coincide con: "${palabra}" → LLEVA PATAS`);
-                break;
-            }
-        }
-        
-        if (!llevaPatas) {
-            addDebug(`❌ NO lleva patas (no es un módulo bajo estándar)`);
+        // Si el módulo NO debe llevar patas (solo ALTOS), no añadir
+        if (!debeLlevarPatas(modulo)) {
             return null;
         }
         
-        const precioPata = getPrecioPata(tipoPataSeleccionado);
-        const nombrePata = getNombrePata(tipoPataSeleccionado);
+        const precioPata = herrajesDB[tipoPataSeleccionado] || (tipoPataSeleccionado === 'PATA_H10' ? 1.88 : 1.00);
+        const nombrePata = tipoPataSeleccionado;
         const totalPatas = 4 * cantidad;
         
-        addDebug(`📊 AÑADIENDO: ${totalPatas} x ${nombrePata} (${precioPata}€/u) = ${(totalPatas * precioPata).toFixed(2)}€`);
+        addDebug(`📊 AÑADIENDO PATAS: ${totalPatas} x ${nombrePata} (${precioPata.toFixed(2)}€/u) = ${(totalPatas * precioPata).toFixed(2)}€`);
         
         return {
             nombre: nombrePata,
@@ -597,9 +368,11 @@
     }
 
     function agregarColgador(modulo, cantidad) {
-        if (!esModuloAlto(modulo)) return null;
+        const categoria = modulo.categoria.toUpperCase();
+        // Solo los ALTOS llevan colgador
+        if (categoria !== 'ALTOS') return null;
         
-        const precioColgador = 4.99;
+        const precioColgador = herrajesDB['Colgador'] || 4.99;
         const totalColgadores = cantidad;
         
         addDebug(`📌 AÑADIENDO COLGADOR: ${totalColgadores} x Colgador = ${(totalColgadores * precioColgador).toFixed(2)}€`);
@@ -609,6 +382,25 @@
             cantidad: totalColgadores,
             precioUnitario: precioColgador,
             total: totalColgadores * precioColgador
+        };
+    }
+
+    function calcularBisagras(puertaInfo, cantidadPuertas) {
+        const alturaPuerta = puertaInfo.altoPuerta;
+        let numBisagrasPorPuerta = (alturaPuerta > 798) ? 3 : 2;
+        const totalBisagras = numBisagrasPorPuerta * cantidadPuertas;
+        
+        if (totalBisagras === 0) return null;
+        
+        const precioBisagra = herrajesDB['BISAGRA_SENSYS'] || 0;
+        
+        addDebug(`🚪 Bisagras: ${numBisagrasPorPuerta} x puerta (altura ${alturaPuerta}mm) → ${totalBisagras} x ${precioBisagra.toFixed(2)}€ = ${(totalBisagras * precioBisagra).toFixed(2)}€`);
+        
+        return {
+            nombre: `Bisagra Sensys (${numBisagrasPorPuerta} ud/puerta)`,
+            cantidad: totalBisagras,
+            precioUnitario: precioBisagra,
+            total: totalBisagras * precioBisagra
         };
     }
 
@@ -635,7 +427,6 @@
         
         let precioPuerta = 0;
         let nombrePuerta = `Puerta ${modeloPuerta} ${anchoPuerta}x${altoPuerta} mm`;
-        let colorPuerta = '';
         
         for (let p of puertasDB) {
             const modeloDB = (p.categoria || '').toUpperCase();
@@ -644,25 +435,12 @@
                 Math.abs(p.alto_mm - altoPuerta) <= 2) {
                 precioPuerta = p.precio_venta;
                 nombrePuerta = p.nombre || `${modeloPuerta} ${anchoPuerta}x${altoPuerta} mm`;
-                colorPuerta = p.color || '';
-                addDebug(`✅ Puerta encontrada: ${modeloPuerta} | ${anchoPuerta}x${altoPuerta} = ${precioPuerta}€`);
+                addDebug(`✅ Puerta: ${modeloPuerta} ${anchoPuerta}x${altoPuerta} = ${precioPuerta}€`);
                 break;
             }
         }
         
-        if (precioPuerta === 0) {
-            addDebug(`❌ No se encontró puerta para ${modeloPuerta} con medidas ${anchoPuerta}x${altoPuerta} mm`);
-        }
-        
-        return { 
-            numPuertas, 
-            anchoPuerta, 
-            altoPuerta, 
-            precioPuerta, 
-            nombrePuerta,
-            modelo: modeloPuerta,
-            colorPuerta
-        };
+        return { numPuertas, anchoPuerta, altoPuerta, precioPuerta, nombrePuerta };
     }
 
     async function cargarExcel() {
@@ -679,6 +457,7 @@
             
             productosDB = [];
             puertasDB = [];
+            herrajesDB = {};
             
             for (let item of json) {
                 let tipo = '';
@@ -686,6 +465,7 @@
                     const v = String(item[key] || '').toUpperCase();
                     if (v === 'MODULO') { tipo = 'MODULO'; break; }
                     if (v === 'PUERTA') { tipo = 'PUERTA'; break; }
+                    if (v === 'HERRAJE') { tipo = 'HERRAJE'; break; }
                 }
                 if (!tipo) continue;
                 
@@ -698,12 +478,11 @@
                     }
                 }
                 
-                let ancho = 0, alto = 0, fondo = 0;
+                let ancho = 0, alto = 0;
                 for (let key in item) {
                     const k = key.toLowerCase();
                     if (k === 'ancho_cm') ancho = parseFloat(item[key]) || 0;
                     if (k === 'alto_cm') alto = parseFloat(item[key]) || 0;
-                    if (k === 'fondo_cm') fondo = parseFloat(item[key]) || 0;
                 }
                 
                 let categoria = '', nombre = '', color = '';
@@ -714,39 +493,26 @@
                     if (k === 'color_acabado') color = String(item[key] || '').trim().toUpperCase();
                 }
                 
-                const obj = { 
-                    tipo, 
-                    categoria,
-                    color,
-                    nombre, 
-                    alto_mm: alto, 
-                    ancho_mm: ancho, 
-                    fondo_mm: fondo, 
-                    precio_venta: precio 
-                };
-                
                 if (tipo === 'MODULO' && categoria && nombre) {
-                    productosDB.push(obj);
+                    productosDB.push({ tipo, categoria, color, nombre, alto_mm: alto, ancho_mm: ancho, precio_venta: precio });
                 }
                 if (tipo === 'PUERTA' && ancho > 0 && alto > 0) {
-                    puertasDB.push(obj);
+                    puertasDB.push({ categoria, nombre, alto_mm: alto, ancho_mm: ancho, precio_venta: precio, color });
+                }
+                if (tipo === 'HERRAJE' && nombre) {
+                    herrajesDB[nombre.toUpperCase()] = precio;
+                    addDebug(`🔩 Herraje: ${nombre} = ${precio.toFixed(2)}€`);
                 }
             }
             
             if (productosDB.length === 0) throw new Error('No hay módulos');
             
-            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos · ${puertasDB.length} puertas`;
+            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos · ${puertasDB.length} puertas · ${Object.keys(herrajesDB).length} herrajes`;
             estadoDatos.className = 'status-loaded';
             loadingMsg.style.display = 'none';
             presupuestadorSection.style.display = 'block';
             
             cargarCategorias();
-            
-            addDebug(`=== PUERTAS CARGADAS (${puertasDB.length}) ===`);
-            const puertasTamesis = puertasDB.filter(p => p.categoria === 'TAMESIS_COLOR');
-            const puertasCloe = puertasDB.filter(p => p.categoria === 'CLOE');
-            addDebug(`TAMESIS_COLOR: ${puertasTamesis.length} puertas`);
-            addDebug(`CLOE: ${puertasCloe.length} puertas`);
             
         } catch (err) {
             estadoDatos.innerHTML = `❌ Error: ${err.message}`;
@@ -776,7 +542,6 @@
     selectCategoria.addEventListener('change', () => {
         const cat = selectCategoria.value;
         if (!cat) { resetSelects(); return; }
-        
         const colores = [...new Set(productosDB.filter(p => p.categoria === cat).map(p => p.color))];
         selectColor.innerHTML = '<option value="">-- Selecciona Color/Acabado --</option>';
         colores.forEach(c => selectColor.innerHTML += `<option value="${c}">${c}</option>`);
@@ -788,7 +553,6 @@
     selectColor.addEventListener('change', () => {
         const cat = selectCategoria.value, col = selectColor.value;
         if (!cat || !col) { selectNombre.disabled = true; return; }
-        
         const items = productosDB.filter(p => p.categoria === cat && p.color === col);
         selectNombre.innerHTML = '<option value="">-- Selecciona --</option>';
         items.forEach(i => {
@@ -803,7 +567,6 @@
         const cat = selectCategoria.value, col = selectColor.value, nom = selectNombre.value;
         const opt = selectNombre.options[selectNombre.selectedIndex];
         if (!nom) { articuloSeleccionado = null; return; }
-        
         articuloSeleccionado = productosDB.find(p => p.categoria === cat && p.color === col && p.nombre === nom);
         if (articuloSeleccionado && opt) {
             articuloSeleccionado.alto_mm = parseInt(opt.dataset.alto) || articuloSeleccionado.alto_mm;
@@ -819,7 +582,7 @@
             const np = parseFloat(inputPrecio.value);
             if (!isNaN(np) && np >= 0) {
                 articuloSeleccionado.precio_venta = np;
-                alert('✅ Precio del módulo modificado');
+                alert('✅ Precio modificado');
             }
         }
     });
@@ -833,10 +596,9 @@
         const modeloPuerta = getModeloPuertaSeleccionado();
         const tipoPata = getTipoPataSeleccionado();
         
-        addDebug(`\n=== NUEVO ELEMENTO: ${cantidad} x ${articuloSeleccionado.nombre} ===`);
-        addDebug(`🚪 Modelo de puerta: ${modeloPuerta}`);
-        addDebug(`🔩 Tipo de pata seleccionado: ${tipoPata}`);
+        addDebug(`\n=== ${cantidad} x ${articuloSeleccionado.nombre} (${articuloSeleccionado.categoria}) ===`);
         
+        // Añadir módulo
         presupuestoActual.push({
             categoria: articuloSeleccionado.categoria,
             color: articuloSeleccionado.color,
@@ -848,11 +610,10 @@
             tipo: 'modulo'
         });
         
+        // Calcular puertas
         const puerta = calcularPuertas(articuloSeleccionado, cantidad, modeloPuerta);
         const totalPuertas = puerta.numPuertas * cantidad;
-        
-        const textoColor = getTextoColorPuerta(modeloPuerta);
-        const colorDisplay = modeloPuerta === 'TAMESIS_COLOR' ? textoColor : (articuloSeleccionado.color || '');
+        const colorDisplay = modeloPuerta === 'TAMESIS_COLOR' ? '🎨 A ELEGIR, DE ENCARGO' : (articuloSeleccionado.color || '');
         
         if (totalPuertas > 0 && puerta.precioPuerta > 0) {
             presupuestoActual.push({
@@ -865,26 +626,30 @@
                 total: totalPuertas * puerta.precioPuerta,
                 tipo: 'puerta'
             });
-            addDebug(`🚪 AÑADIDAS: ${totalPuertas} puertas ${modeloPuerta} a ${puerta.precioPuerta}€/u = ${(totalPuertas * puerta.precioPuerta).toFixed(2)}€`);
-        } else if (totalPuertas > 0) {
-            presupuestoActual.push({
-                categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`,
-                color: colorDisplay,
-                nombre: `⚠️ SIN PRECIO - ${puerta.nombrePuerta}`,
-                medida: `${puerta.anchoPuerta}×${puerta.altoPuerta} mm`,
-                cantidad: totalPuertas,
-                precioUnitario: 0,
-                total: 0,
-                tipo: 'puerta'
-            });
+            
+            // Añadir bisagras
+            const bisagras = calcularBisagras(puerta, totalPuertas);
+            if (bisagras && bisagras.cantidad > 0 && bisagras.precioUnitario > 0) {
+                presupuestoActual.push({
+                    categoria: "🔩 HERRAJES",
+                    color: '',
+                    nombre: bisagras.nombre,
+                    medida: "Bisagra Sensys",
+                    cantidad: bisagras.cantidad,
+                    precioUnitario: bisagras.precioUnitario,
+                    total: bisagras.total,
+                    tipo: 'herraje'
+                });
+            }
         }
         
+        // Añadir patas (TODOS excepto ALTOS)
         const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata);
         if (patas) {
             presupuestoActual.push({
                 categoria: "🔩 HERRAJES",
                 color: '',
-                nombre: patas.nombre + " (4 patas/módulo)",
+                nombre: `${patas.nombre} (4 patas/módulo)`,
                 medida: patas.nombre,
                 cantidad: patas.cantidad,
                 precioUnitario: patas.precioUnitario,
@@ -893,6 +658,7 @@
             });
         }
         
+        // Añadir colgador (solo ALTOS)
         const colgador = agregarColgador(articuloSeleccionado, cantidad);
         if (colgador) {
             presupuestoActual.push({
@@ -912,10 +678,9 @@
     });
 
     btnReset.addEventListener('click', () => {
-        if (confirm('¿Resetear todo el presupuesto?')) {
+        if (confirm('¿Resetear todo?')) {
             presupuestoActual = [];
             actualizarTabla();
-            addDebug('Presupuesto resetado');
         }
     });
 
@@ -925,13 +690,8 @@
         
         presupuestoActual.forEach((item, idx) => {
             subtotal += item.total;
-            let clase = '';
-            if (item.tipo === 'modulo') clase = 'row-modulo';
-            if (item.tipo === 'puerta') clase = 'row-puerta';
-            if (item.tipo === 'herraje') clase = 'row-herraje';
-            
-            let colorClass = '';
-            if (item.color === '🎨 A ELEGIR, DE ENCARGO') colorClass = 'color-encargo';
+            let clase = item.tipo === 'modulo' ? 'row-modulo' : (item.tipo === 'puerta' ? 'row-puerta' : 'row-herraje');
+            let colorClass = item.color === '🎨 A ELEGIR, DE ENCARGO' ? 'color-encargo' : '';
             
             tablaPresupuesto.innerHTML += `
                 <tr class="${clase} ${colorClass}">
@@ -940,7 +700,7 @@
                     <td>${item.nombre}</td>
                     <td>${item.medida}</td>
                     <td>${item.cantidad}</td>
-                    <td>${item.precioUnitario.toFixed(2)}€</p>
+                    <td>${item.precioUnitario.toFixed(2)}€</td>
                     <td><b>${item.total.toFixed(2)}€</b></td>
                     <td><button onclick="eliminarElemento(${idx})" style="background:#e74c3c; padding:6px 12px; width:auto; border-radius:10px;">🗑️</button></td>
                 </tr>
@@ -948,11 +708,9 @@
         });
         
         const iva = subtotal * (IVA_PORCENTAJE / 100);
-        const totalConIva = subtotal + iva;
-        
         subtotalSpan.innerText = subtotal.toFixed(2) + ' €';
         ivaSpan.innerText = iva.toFixed(2) + ' €';
-        totalConIvaSpan.innerText = totalConIva.toFixed(2) + ' €';
+        totalConIvaSpan.innerText = (subtotal + iva).toFixed(2) + ' €';
     }
 
     window.eliminarElemento = (idx) => {
