@@ -475,6 +475,7 @@
     
     let productosDB = [];
     let puertasDB = [];
+    let herrajesDB = {};   // Almacenará los precios de herrajes como bisagras, patas, etc.
     let presupuestoActual = [];
     let articuloSeleccionado = null;
 
@@ -519,8 +520,8 @@
     }
 
     function getPrecioPata(tipo) {
-        if (tipo === 'PATA_H10') return 1.88;
-        if (tipo === 'PATA_H15') return 1.00;
+        if (tipo === 'PATA_H10') return herrajesDB['PATA_H10'] || 1.88;
+        if (tipo === 'PATA_H15') return herrajesDB['PATA_H15'] || 1.00;
         return 0;
     }
 
@@ -540,9 +541,34 @@
     function esModuloAlto(modulo) {
         const nombreModulo = modulo.nombre.toUpperCase();
         const categoria = modulo.categoria.toUpperCase();
-        const esAlto = nombreModulo.includes('ALTO') || categoria.includes('ALTO');
+        const esAlto = nombreModulo.includes('ALTO') || categoria.includes('ALTO') || modulo.categoria === 'ALTOS';
         addDebug(`🔍 ¿Es alto? ${modulo.nombre} → ${esAlto ? 'SÍ (lleva colgador, NO PATAS)' : 'NO'}`);
         return esAlto;
+    }
+
+    // NUEVA FUNCIÓN: Calcular bisagras según la altura de la puerta
+    function calcularBisagras(puertaInfo, cantidadPuertas, modeloPuerta) {
+        const alturaPuerta = puertaInfo.altoPuerta;
+        // Regla: 2 bisagras si altura <= 798, 3 bisagras si > 798
+        let numBisagrasPorPuerta = (alturaPuerta > 798) ? 3 : 2;
+        const totalBisagras = numBisagrasPorPuerta * cantidadPuertas;
+        
+        if (totalBisagras === 0) return null;
+        
+        // Obtener precio de la bisagra desde herrajesDB
+        const precioBisagra = herrajesDB['BISAGRA_SENSYS'] || 0;
+        if (precioBisagra === 0) {
+            addDebug(`⚠️ Precio de bisagra no encontrado (BISAGRA_SENSYS), se usará 0€`);
+        }
+        
+        addDebug(`🚪 Bisagras: ${numBisagrasPorPuerta} x puerta (altura=${alturaPuerta}mm) → Total: ${totalBisagras} x ${precioBisagra}€ = ${(totalBisagras * precioBisagra).toFixed(2)}€`);
+        
+        return {
+            nombre: `Bisagra Sensys (${numBisagrasPorPuerta} ud/puerta)`,
+            cantidad: totalBisagras,
+            precioUnitario: precioBisagra,
+            total: totalBisagras * precioBisagra
+        };
     }
 
     function agregarPatas(modulo, cantidad, tipoPataSeleccionado) {
@@ -589,7 +615,7 @@
         addDebug(`📊 AÑADIENDO: ${totalPatas} x ${nombrePata} (${precioPata}€/u) = ${(totalPatas * precioPata).toFixed(2)}€`);
         
         return {
-            nombre: nombrePata,
+            nombre: nombrePata + " (4 patas/módulo)",
             cantidad: totalPatas,
             precioUnitario: precioPata,
             total: totalPatas * precioPata
@@ -599,7 +625,7 @@
     function agregarColgador(modulo, cantidad) {
         if (!esModuloAlto(modulo)) return null;
         
-        const precioColgador = 4.99;
+        const precioColgador = herrajesDB['Colgador'] || 4.99;
         const totalColgadores = cantidad;
         
         addDebug(`📌 AÑADIENDO COLGADOR: ${totalColgadores} x Colgador = ${(totalColgadores * precioColgador).toFixed(2)}€`);
@@ -679,6 +705,7 @@
             
             productosDB = [];
             puertasDB = [];
+            herrajesDB = {};
             
             for (let item of json) {
                 let tipo = '';
@@ -686,6 +713,7 @@
                     const v = String(item[key] || '').toUpperCase();
                     if (v === 'MODULO') { tipo = 'MODULO'; break; }
                     if (v === 'PUERTA') { tipo = 'PUERTA'; break; }
+                    if (v === 'HERRAJE') { tipo = 'HERRAJE'; break; }
                 }
                 if (!tipo) continue;
                 
@@ -693,7 +721,8 @@
                 for (let key in item) {
                     const k = key.toLowerCase();
                     if (k === 'precio_venta') {
-                        precio = parseFloat(String(item[key]).replace(',', '.')) || 0;
+                        let raw = String(item[key]).replace(',', '.');
+                        precio = parseFloat(raw) || 0;
                         break;
                     }
                 }
@@ -731,11 +760,15 @@
                 if (tipo === 'PUERTA' && ancho > 0 && alto > 0) {
                     puertasDB.push(obj);
                 }
+                if (tipo === 'HERRAJE' && nombre) {
+                    herrajesDB[nombre.toUpperCase()] = precio;
+                    addDebug(`🔩 Herraje cargado: ${nombre} = ${precio}€`);
+                }
             }
             
             if (productosDB.length === 0) throw new Error('No hay módulos');
             
-            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos · ${puertasDB.length} puertas`;
+            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos · ${puertasDB.length} puertas · ${Object.keys(herrajesDB).length} herrajes`;
             estadoDatos.className = 'status-loaded';
             loadingMsg.style.display = 'none';
             presupuestadorSection.style.display = 'block';
@@ -747,6 +780,7 @@
             const puertasCloe = puertasDB.filter(p => p.categoria === 'CLOE');
             addDebug(`TAMESIS_COLOR: ${puertasTamesis.length} puertas`);
             addDebug(`CLOE: ${puertasCloe.length} puertas`);
+            addDebug(`=== HERRAJES: ${JSON.stringify(herrajesDB)}`);
             
         } catch (err) {
             estadoDatos.innerHTML = `❌ Error: ${err.message}`;
@@ -866,6 +900,24 @@
                 tipo: 'puerta'
             });
             addDebug(`🚪 AÑADIDAS: ${totalPuertas} puertas ${modeloPuerta} a ${puerta.precioPuerta}€/u = ${(totalPuertas * puerta.precioPuerta).toFixed(2)}€`);
+            
+            // === NUEVO: Calcular y añadir bisagras ===
+            const bisagras = calcularBisagras(puerta, totalPuertas, modeloPuerta);
+            if (bisagras && bisagras.cantidad > 0 && bisagras.precioUnitario > 0) {
+                presupuestoActual.push({
+                    categoria: "🔩 HERRAJES",
+                    color: '',
+                    nombre: bisagras.nombre,
+                    medida: "Bisagra Sensys",
+                    cantidad: bisagras.cantidad,
+                    precioUnitario: bisagras.precioUnitario,
+                    total: bisagras.total,
+                    tipo: 'herraje'
+                });
+            } else if (bisagras && bisagras.precioUnitario === 0) {
+                addDebug(`⚠️ No se añadieron bisagras porque el precio es 0`);
+            }
+            
         } else if (totalPuertas > 0) {
             presupuestoActual.push({
                 categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`,
@@ -884,7 +936,7 @@
             presupuestoActual.push({
                 categoria: "🔩 HERRAJES",
                 color: '',
-                nombre: patas.nombre + " (4 patas/módulo)",
+                nombre: patas.nombre,
                 medida: patas.nombre,
                 cantidad: patas.cantidad,
                 precioUnitario: patas.precioUnitario,
@@ -940,10 +992,10 @@
                     <td>${item.nombre}</td>
                     <td>${item.medida}</td>
                     <td>${item.cantidad}</td>
-                    <td>${item.precioUnitario.toFixed(2)}€</p>
+                    <td>${item.precioUnitario.toFixed(2)}€</td>
                     <td><b>${item.total.toFixed(2)}€</b></td>
                     <td><button onclick="eliminarElemento(${idx})" style="background:#e74c3c; padding:6px 12px; width:auto; border-radius:10px;">🗑️</button></td>
-                </tr>
+                <tr>
             `;
         });
         
