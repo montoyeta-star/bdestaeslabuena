@@ -236,7 +236,6 @@
                 let categoria = '', nombre = '', color = '';
                 for (let key in item) { const k = key.toLowerCase(); if (k === 'categoria') categoria = String(item[key] || '').trim().toUpperCase(); if (k === 'nombre') nombre = String(item[key] || '').trim(); if (k === 'color_acabado') color = String(item[key] || '').trim().toUpperCase(); }
                 if (tipo === 'MODULO' && categoria && nombre) { 
-                    // Si es CACEROLEROS y no tiene precio, asignar 5€ por defecto
                     if (categoria === 'CACEROLEROS' && (precio === 0 || isNaN(precio))) precio = 5;
                     productosDB.push({ tipo, categoria, color, nombre, alto_mm: alto, ancho_mm: ancho, precio_venta: precio || 5 }); 
                 }
@@ -299,59 +298,196 @@
         
         if (esCacerolero) {
             addDebug(`🧺 PROCESANDO CACEROLEROS: ${articuloSeleccionado.nombre}`);
-            // Módulo principal (con precio por defecto 5 si no tiene)
-            const precioModulo = (articuloSeleccionado.precio_venta > 0) ? articuloSeleccionado.precio_venta : 5;
-            presupuestoActual.push({ categoria: articuloSeleccionado.categoria, color: articuloSeleccionado.color, nombre: articuloSeleccionado.nombre, medida: `${articuloSeleccionado.ancho_mm}×${articuloSeleccionado.alto_mm} mm`, cantidad: cantidad, precioUnitario: precioModulo, total: cantidad * precioModulo, tipo: 'modulo' });
             
-            // Puertas: altura fija según módulo (2 puertas)
+            // 1. Módulo principal
+            const precioModulo = (articuloSeleccionado.precio_venta > 0) ? articuloSeleccionado.precio_venta : 5;
+            presupuestoActual.push({
+                categoria: articuloSeleccionado.categoria,
+                color: articuloSeleccionado.color,
+                nombre: articuloSeleccionado.nombre,
+                medida: `${articuloSeleccionado.ancho_mm}×${articuloSeleccionado.alto_mm} mm`,
+                cantidad: cantidad,
+                precioUnitario: precioModulo,
+                total: cantidad * precioModulo,
+                tipo: 'modulo'
+            });
+            
+            // 2. Puertas (2 puertas por módulo, una encima de otra)
             const altoModulo = articuloSeleccionado.alto_mm;
-            let altoPuerta = altoModulo === 700 ? 348 : altoModulo === 800 ? 398 : altoModulo - 3;
-            const anchoPuerta = (articuloSeleccionado.ancho_mm / 2) - 3;
+            // FÓRMULA: (alto_modulo / 2) - 2 mm
+            let altoPuerta = (altoModulo / 2) - 2;
+            // FÓRMULA: ancho_modulo - 3 mm
+            const anchoPuerta = articuloSeleccionado.ancho_mm - 3;
+            
             const totalPuertas = 2 * cantidad;
-            let precioPuerta = 0, nombrePuerta = `Puerta ${modeloPuerta} ${Math.round(anchoPuerta)}x${altoPuerta} mm`;
+            let precioPuerta = 0;
+            let nombrePuerta = `Puerta ${modeloPuerta} ${Math.round(anchoPuerta)}x${Math.round(altoPuerta)} mm`;
+            
+            addDebug(`📐 Cálculo puerta CACEROLERO: alto_modulo=${altoModulo} → alto_puerta=${altoPuerta}mm, ancho_modulo=${articuloSeleccionado.ancho_mm} → ancho_puerta=${anchoPuerta}mm`);
+            
+            // Buscar la puerta en la base de datos
             for (let p of puertasDB) {
-                if ((p.categoria || '').toUpperCase() === modeloPuerta && Math.abs(p.ancho_mm - anchoPuerta) <= 2 && Math.abs(p.alto_mm - altoPuerta) <= 2) {
-                    precioPuerta = p.precio_venta; nombrePuerta = p.nombre || nombrePuerta; addDebug(`✅ Puerta CACEROLERO: ${nombrePuerta} = ${precioPuerta}€`); break;
+                const modeloDB = (p.categoria || '').toUpperCase();
+                if (modeloDB === modeloPuerta &&
+                    Math.abs(p.ancho_mm - anchoPuerta) <= 2 && 
+                    Math.abs(p.alto_mm - altoPuerta) <= 2) {
+                    precioPuerta = p.precio_venta;
+                    nombrePuerta = p.nombre || nombrePuerta;
+                    addDebug(`✅ Puerta CACEROLERO encontrada: ${nombrePuerta} = ${precioPuerta}€ (ancho: ${p.ancho_mm}, alto: ${p.alto_mm})`);
+                    break;
                 }
             }
-            if (totalPuertas > 0 && precioPuerta > 0) { presupuestoActual.push({ categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`, color: modeloPuerta === 'TAMESIS_COLOR' ? '🎨 A ELEGIR, DE ENCARGO' : articuloSeleccionado.color, nombre: nombrePuerta, medida: `${Math.round(anchoPuerta)}×${altoPuerta} mm`, cantidad: totalPuertas, precioUnitario: precioPuerta, total: totalPuertas * precioPuerta, tipo: 'puerta' }); }
             
-            // 2 CACEROLEROS (herraje)
+            // Si no encontró la puerta, usar precio por defecto
+            if (precioPuerta === 0) {
+                precioPuerta = 15;
+                addDebug(`⚠️ No se encontró puerta exacta para ${Math.round(anchoPuerta)}x${Math.round(altoPuerta)}mm, usando precio por defecto: ${precioPuerta}€`);
+            }
+            
+            if (totalPuertas > 0 && precioPuerta > 0) {
+                presupuestoActual.push({
+                    categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`,
+                    color: modeloPuerta === 'TAMESIS_COLOR' ? '🎨 A ELEGIR, DE ENCARGO' : articuloSeleccionado.color,
+                    nombre: nombrePuerta,
+                    medida: `${Math.round(anchoPuerta)}×${Math.round(altoPuerta)} mm`,
+                    cantidad: totalPuertas,
+                    precioUnitario: precioPuerta,
+                    total: totalPuertas * precioPuerta,
+                    tipo: 'puerta'
+                });
+            }
+            
+            // 3. CACEROLEROS (herraje) x2 por módulo
             const totalCaceroleros = 2 * cantidad;
             const precioHerraje = herrajesDB['CACEROLERO'] || 50;
-            if (precioHerraje > 0) { presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: "CACEROLERO (herraje)", medida: "por cacerolero", cantidad: totalCaceroleros, precioUnitario: precioHerraje, total: totalCaceroleros * precioHerraje, tipo: 'herraje' }); }
+            if (precioHerraje > 0) {
+                presupuestoActual.push({
+                    categoria: "🔩 HERRAJES",
+                    color: '',
+                    nombre: "CACEROLERO (herraje)",
+                    medida: "por cacerolero",
+                    cantidad: totalCaceroleros,
+                    precioUnitario: precioHerraje,
+                    total: totalCaceroleros * precioHerraje,
+                    tipo: 'herraje'
+                });
+            }
             
-            // 2 BASES CACEROLERO
+            // 4. Bases CACEROLERO x2 por módulo
             const anchoModulo = articuloSeleccionado.ancho_mm;
-            let precioBase = 9; // precio por defecto
-            if (basesDB['CACEROLERO'] && basesDB['CACEROLERO'][anchoModulo]) precioBase = basesDB['CACEROLERO'][anchoModulo];
-            presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: `BASE CACEROLERO (ancho ${anchoModulo} mm)`, medida: "2 por módulo", cantidad: totalCaceroleros, precioUnitario: precioBase, total: totalCaceroleros * precioBase, tipo: 'herraje' });
+            let precioBase = 9;
+            if (basesDB['CACEROLERO'] && basesDB['CACEROLERO'][anchoModulo]) {
+                precioBase = basesDB['CACEROLERO'][anchoModulo];
+                addDebug(`✅ Base CACEROLERO encontrada para ancho ${anchoModulo} mm → ${precioBase}€`);
+            } else {
+                addDebug(`⚠️ No se encontró base CACEROLERO para ancho ${anchoModulo} mm, usando precio por defecto: ${precioBase}€`);
+            }
             
-            // Patas (sin bisagras, sin colgador)
+            presupuestoActual.push({
+                categoria: "🔩 HERRAJES",
+                color: '',
+                nombre: `BASE CACEROLERO (ancho ${anchoModulo} mm)`,
+                medida: "2 por módulo",
+                cantidad: totalCaceroleros,
+                precioUnitario: precioBase,
+                total: totalCaceroleros * precioBase,
+                tipo: 'herraje'
+            });
+            
+            // 5. Patas (sin bisagras, sin colgador)
             const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata);
-            if (patas) presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: `${patas.nombre} (4 patas/módulo)`, medida: patas.nombre, cantidad: patas.cantidad, precioUnitario: patas.precioUnitario, total: patas.total, tipo: 'herraje' });
-            addDebug(`✅ CACEROLERO añadido correctamente (sin bisagras)`);
+            if (patas) {
+                presupuestoActual.push({
+                    categoria: "🔩 HERRAJES",
+                    color: '',
+                    nombre: `${patas.nombre} (4 patas/módulo)`,
+                    medida: patas.nombre,
+                    cantidad: patas.cantidad,
+                    precioUnitario: patas.precioUnitario,
+                    total: patas.total,
+                    tipo: 'herraje'
+                });
+            }
+            
+            addDebug(`✅ CACEROLERO añadido correctamente con ${totalPuertas} puertas (2 por módulo, alto_puerta=${altoPuerta}mm, ancho_puerta=${anchoPuerta}mm)`);
         } else {
-            // Lógica para otras categorías
-            presupuestoActual.push({ categoria: articuloSeleccionado.categoria, color: articuloSeleccionado.color, nombre: articuloSeleccionado.nombre, medida: `${articuloSeleccionado.ancho_mm}×${articuloSeleccionado.alto_mm} mm`, cantidad: cantidad, precioUnitario: articuloSeleccionado.precio_venta, total: cantidad * articuloSeleccionado.precio_venta, tipo: 'modulo' });
+            // Lógica para otras categorías (BAJOS_ALMACENAJE, ALTOS, etc.)
+            presupuestoActual.push({
+                categoria: articuloSeleccionado.categoria,
+                color: articuloSeleccionado.color,
+                nombre: articuloSeleccionado.nombre,
+                medida: `${articuloSeleccionado.ancho_mm}×${articuloSeleccionado.alto_mm} mm`,
+                cantidad: cantidad,
+                precioUnitario: articuloSeleccionado.precio_venta,
+                total: cantidad * articuloSeleccionado.precio_venta,
+                tipo: 'modulo'
+            });
+            
             const puerta = calcularPuertas(articuloSeleccionado, cantidad, modeloPuerta);
             const totalPuertas = puerta.numPuertas * cantidad;
             const colorDisplay = modeloPuerta === 'TAMESIS_COLOR' ? '🎨 A ELEGIR, DE ENCARGO' : (articuloSeleccionado.color || '');
+            
             if (totalPuertas > 0 && puerta.precioPuerta > 0) {
-                presupuestoActual.push({ categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`, color: colorDisplay, nombre: puerta.nombrePuerta, medida: `${puerta.anchoPuerta}×${puerta.altoPuerta} mm`, cantidad: totalPuertas, precioUnitario: puerta.precioPuerta, total: totalPuertas * puerta.precioPuerta, tipo: 'puerta' });
+                presupuestoActual.push({
+                    categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`,
+                    color: colorDisplay,
+                    nombre: puerta.nombrePuerta,
+                    medida: `${puerta.anchoPuerta}×${puerta.altoPuerta} mm`,
+                    cantidad: totalPuertas,
+                    precioUnitario: puerta.precioPuerta,
+                    total: totalPuertas * puerta.precioPuerta,
+                    tipo: 'puerta'
+                });
+                
                 const bisagras = calcularBisagras(puerta, totalPuertas);
-                if (bisagras && bisagras.cantidad > 0 && bisagras.precioUnitario > 0) presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: bisagras.nombre, medida: "Bisagra Sensys", cantidad: bisagras.cantidad, precioUnitario: bisagras.precioUnitario, total: bisagras.total, tipo: 'herraje' });
+                if (bisagras && bisagras.cantidad > 0 && bisagras.precioUnitario > 0) {
+                    presupuestoActual.push({
+                        categoria: "🔩 HERRAJES",
+                        color: '',
+                        nombre: bisagras.nombre,
+                        medida: "Bisagra Sensys",
+                        cantidad: bisagras.cantidad,
+                        precioUnitario: bisagras.precioUnitario,
+                        total: bisagras.total,
+                        tipo: 'herraje'
+                    });
+                }
             }
+            
             const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata);
-            if (patas) presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: `${patas.nombre} (4 patas/módulo)`, medida: patas.nombre, cantidad: patas.cantidad, precioUnitario: patas.precioUnitario, total: patas.total, tipo: 'herraje' });
+            if (patas) {
+                presupuestoActual.push({
+                    categoria: "🔩 HERRAJES",
+                    color: '',
+                    nombre: `${patas.nombre} (4 patas/módulo)`,
+                    medida: patas.nombre,
+                    cantidad: patas.cantidad,
+                    precioUnitario: patas.precioUnitario,
+                    total: patas.total,
+                    tipo: 'herraje'
+                });
+            }
+            
             const colgador = agregarColgador(articuloSeleccionado, cantidad);
-            if (colgador) presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: colgador.nombre, medida: "1 por módulo", cantidad: colgador.cantidad, precioUnitario: colgador.precioUnitario, total: colgador.total, tipo: 'herraje' });
+            if (colgador) {
+                presupuestoActual.push({
+                    categoria: "🔩 HERRAJES",
+                    color: '',
+                    nombre: colgador.nombre,
+                    medida: "1 por módulo",
+                    cantidad: colgador.cantidad,
+                    precioUnitario: colgador.precioUnitario,
+                    total: colgador.total,
+                    tipo: 'herraje'
+                });
+            }
         }
         actualizarTabla();
         inputCantidad.value = 1;
     });
 
     btnReset.addEventListener('click', () => { if (confirm('¿Resetear todo?')) { presupuestoActual = []; actualizarTabla(); } });
+    
     function actualizarTabla() {
         tablaPresupuesto.innerHTML = '';
         let subtotal = 0;
@@ -359,13 +495,14 @@
             subtotal += item.total;
             let clase = item.tipo === 'modulo' ? 'row-modulo' : (item.tipo === 'puerta' ? 'row-puerta' : 'row-herraje');
             let colorClass = item.color === '🎨 A ELEGIR, DE ENCARGO' ? 'color-encargo' : '';
-            tablaPresupuesto.innerHTML += `<tr class="${clase} ${colorClass}"><td>${item.categoria}</td><td>${item.color || '-'}</td><td>${item.nombre}</td><td>${item.medida}</td><td>${item.cantidad}</td><td>${item.precioUnitario.toFixed(2)}€</p><td><b>${item.total.toFixed(2)}€</b></p><td><button onclick="eliminarElemento(${idx})" style="background:#e74c3c; padding:6px 12px; width:auto; border-radius:10px;">🗑️</button></p></tr>`;
+            tablaPresupuesto.innerHTML += `<tr class="${clase} ${colorClass}"><td>${item.categoria}</td><td>${item.color || '-'}</td><td>${item.nombre}</td><td>${item.medida}</td><td>${item.cantidad}</td><td>${item.precioUnitario.toFixed(2)}€</td><td><b>${item.total.toFixed(2)}€</b></td><td><button onclick="eliminarElemento(${idx})" style="background:#e74c3c; padding:6px 12px; width:auto; border-radius:10px;">🗑️</button></td></tr>`;
         });
         const iva = subtotal * (IVA_PORCENTAJE / 100);
         subtotalSpan.innerText = subtotal.toFixed(2) + ' €';
         ivaSpan.innerText = iva.toFixed(2) + ' €';
         totalConIvaSpan.innerText = (subtotal + iva).toFixed(2) + ' €';
     }
+    
     window.eliminarElemento = (idx) => { presupuestoActual.splice(idx, 1); actualizarTabla(); };
     cargarExcel();
 </script>
