@@ -2,133 +2,349 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presupuestador de Cocinas - Tamesis / Cloe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Presupuestador Cocinas - Tamesis/Cloe | Lateral Rojo</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; min-height: 100vh; padding: 30px 20px; }
-        .container { max-width: 1400px; margin: 0 auto; background: #1a1a1a; border-radius: 32px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid #333; }
-        h1 { font-size: 1.8rem; font-weight: 600; background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%); -webkit-background-clip: text; background-clip: text; color: transparent; border-bottom: 3px solid #333; padding-bottom: 16px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
-        h1::before { content: "🍳"; font-size: 2rem; background: none; color: #e67e22; }
-        h2 { font-size: 1.2rem; font-weight: 600; color: #e67e22; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .section { margin-bottom: 28px; padding: 24px; background: #222; border-radius: 20px; border: 1px solid #333; transition: all 0.2s ease; }
-        .section:hover { border-color: #e67e22; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        label { font-weight: 600; display: block; margin-bottom: 8px; color: #ccc; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        select, input, button { width: 100%; padding: 12px 14px; border: 2px solid #444; border-radius: 14px; font-size: 14px; font-family: inherit; transition: all 0.2s ease; background: #2a2a2a; color: white; }
-        select:focus, input:focus { outline: none; border-color: #e67e22; box-shadow: 0 0 0 3px rgba(230,126,34,0.2); }
-        button { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: white; border: none; cursor: pointer; font-weight: 600; border-radius: 14px; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(230,126,34,0.3); }
-        .btn-add { background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%); margin-top: 28px; }
-        .btn-danger { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
-        .btn-secondary { background: linear-gradient(135deg, #555 0%, #333 100%); }
-        table { width: 100%; border-collapse: collapse; margin-top: 16px; border-radius: 16px; overflow: hidden; }
-        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #333; }
-        th { background: #2a2a2a; font-weight: 600; color: #e67e22; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 10px; }
-        tr:hover td { background-color: #2a2a2a; }
-        .row-modulo { background-color: #1e1e1e; border-left: 4px solid #e67e22; }
-        .row-modulo td { font-size: 14px !important; font-weight: 600 !important; color: #f0f0f0 !important; background-color: #1e1e1e; border-bottom: 2px solid #e67e22; padding: 14px 12px !important; }
-        .row-puerta td, .row-herraje td { font-size: 10px !important; color: #aaa; padding: 6px 8px !important; }
-        .row-puerta td:first-child, .row-herraje td:first-child { padding-left: 24px !important; }
-        .row-puerta { background-color: #1a2a2a; }
-        .row-herraje { background-color: #1a2a1a; }
-        .color-encargo { color: #f39c12 !important; font-style: italic; font-weight: 600; }
-        .total-container { margin-top: 24px; background: linear-gradient(135deg, #111 0%, #0a0a0a 100%); border-radius: 20px; padding: 24px; color: white; border: 1px solid #333; }
-        .total-line { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-bottom: 1px solid #333; }
-        .total-line:last-child { border-bottom: none; padding-bottom: 0; }
-        .total-line.grand-total { padding-top: 16px; margin-top: 8px; font-size: 1.4rem; font-weight: 700; border-top: 2px solid #e67e22; border-bottom: none; }
-        .total-label { font-size: 1rem; font-weight: 500; opacity: 0.9; }
-        .total-amount { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; }
-        .grand-total .total-label { font-size: 1.2rem; opacity: 1; }
-        .grand-total .total-amount { font-size: 1.8rem; color: #f39c12; }
-        .status-bar { background: #222; padding: 14px 20px; border-radius: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #444; color: #ccc; }
-        .status-loaded { color: #27ae60; font-weight: 700; background: rgba(39,174,96,0.15); padding: 6px 14px; border-radius: 40px; }
-        .status-not-loaded { color: #e74c3c; font-weight: 700; background: rgba(231,76,60,0.1); padding: 6px 14px; border-radius: 40px; }
-        .patas-selector, .modelo-selector { border-radius: 20px; padding: 18px 20px; }
-        .patas-selector { background: #1a1a2a; border: 1px solid #334; margin-bottom: 24px; }
-        .modelo-selector { background: #2a1a1a; border: 1px solid #633; margin: 20px 0 0 0; }
-        .patas-label, .modelo-label { display: flex; gap: 28px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
-        .patas-label label, .modelo-label label { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; text-transform: none; cursor: pointer; padding: 8px 16px; background: #2a2a2a; border-radius: 40px; border: 1px solid #444; transition: all 0.2s ease; color: #ccc; }
-        .patas-label label:hover, .modelo-label label:hover { border-color: #e67e22; background: #333; }
-        .patas-label input, .modelo-label input { width: auto; margin: 0; transform: scale(1.1); accent-color: #e67e22; }
-        .action-buttons { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
-        .action-buttons button { width: auto; padding: 10px 24px; }
-        .loading { text-align: center; padding: 50px; color: #e67e22; font-weight: 500; }
-        .info-text { font-size: 12px; color: #888; margin-top: 12px; }
-        .debug-box { background: #0a0a0a; color: #a5f3c3; border-radius: 16px; padding: 16px; font-family: 'Monaco', monospace; font-size: 11px; margin-top: 20px; border: 1px solid #333; }
-        @media print { 
-            .no-print { display: none !important; } 
-            body, .container, .section, table, td, th, tr { background: white !important; color: black !important; box-shadow: none !important; border-color: #ccc !important; }
-            .container { padding: 5px !important; margin: 0 !important; max-width: 100% !important; }
-            body, .container, table, td, th, .total-container, .total-line, .section, h2 { font-family: Arial, Helvetica, sans-serif !important; font-size: 9pt !important; }
-            h1 { font-size: 12pt !important; margin-bottom: 6px !important; padding-bottom: 4px !important; background: none !important; color: black !important; }
-            h1::before { color: black !important; }
-            h2 { font-size: 10pt !important; margin-bottom: 4px !important; color: black !important; }
-            table { margin-top: 3px !important; border-collapse: collapse !important; }
-            th, td { padding: 2px 4px !important; font-size: 8pt !important; border-bottom: 1px solid #ccc !important; }
-            th { background: #eee !important; font-size: 8pt !important; color: black !important; }
-            .row-modulo td { font-size: 9pt !important; padding: 3px 4px !important; background: #f5f5f5 !important; color: black !important; border-bottom: 1px solid #999 !important; }
-            .row-puerta td, .row-herraje td { font-size: 7pt !important; padding: 1px 4px !important; padding-left: 15px !important; color: #333 !important; }
-            .color-encargo { color: #e67e22 !important; }
-            .total-container { margin-top: 8px !important; padding: 6px !important; border: 1px solid #ccc !important; background: white !important; }
-            .total-line { padding: 2px 0 !important; border-bottom: none !important; }
-            .total-line.grand-total { padding-top: 3px !important; margin-top: 3px !important; border-top: 1px solid #000 !important; }
-            .total-label, .total-amount { font-size: 9pt !important; }
-            .grand-total .total-amount { font-size: 11pt !important; color: #000 !important; }
-            .patas-selector, .modelo-selector, .action-buttons, .debug-box, .status-bar { display: none !important; }
-            .section { margin-bottom: 6px !important; padding: 6px !important; border: none !important; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        @media (max-width: 768px) { .grid-3 { grid-template-columns: 1fr; gap: 12px; } .patas-label, .modelo-label { flex-direction: column; align-items: flex-start; gap: 10px; } .container { padding: 20px; } }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+            background: #eef2f5;
+            min-height: 100vh;
+            padding: 20px 24px;
+        }
+
+        /* Layout dos columnas */
+        .dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        /* COLUMNA LATERAL: SIN ESQUINAS REDONDEADAS, FONDO ROJO, COMPACTO EXTREMO */
+        .sidebar-form {
+            flex: 1.2;
+            min-width: 300px;
+            background: #b91c1c;
+            border: none;
+            border-radius: 0px !important;
+            padding: 14px 16px;
+            position: sticky;
+            top: 20px;
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Compactación total */
+        .sidebar-form * {
+            font-size: 0.7rem;
+            line-height: 1.2;
+        }
+
+        .sidebar-form h2 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+            border-left: 3px solid #ffd966;
+            padding-left: 10px;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-form label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 3px;
+            color: #ffe6e6;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+
+        .sidebar-form select,
+        .sidebar-form input {
+            width: 100%;
+            padding: 5px 8px;
+            border: 1px solid #a31616;
+            border-radius: 0px !important;
+            font-size: 0.68rem;
+            background: #fff3e8;
+            color: #1a1a1a;
+        }
+
+        .modelo-selector, .patas-selector {
+            background: #a51c1c;
+            padding: 6px 8px;
+            margin: 10px 0 8px 0;
+            border: 1px solid #c72a2a;
+            border-radius: 0px;
+        }
+
+        .modelo-label, .patas-label {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .modelo-label label, .patas-label label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            background: #a31b1b;
+            border: 1px solid #d14545;
+            border-radius: 0px;
+            color: white;
+            font-size: 0.65rem;
+        }
+
+        .precio-row {
+            display: flex;
+            gap: 8px;
+        }
+        .precio-row button {
+            width: 44px;
+            background: #d97706;
+            border: none;
+            border-radius: 0px;
+            font-size: 0.65rem;
+        }
+        .btn-add-large {
+            background: #ca8a04;
+            width: 100%;
+            padding: 6px 0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 14px;
+            border-radius: 0px;
+        }
+        .info-text {
+            font-size: 0.55rem;
+            color: #ffcece;
+            margin-top: 4px;
+        }
+
+        /* HEADER GLOBAL */
+        .global-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 6px 18px;
+            border-bottom: 2px solid #b91c1c;
+        }
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .subtitulo {
+            font-size: 0.65rem;
+            background: #f1f5f9;
+            padding: 2px 10px;
+            color: #b91c1c;
+        }
+        .status-badge {
+            font-size: 0.65rem;
+            margin-left: auto;
+            background: #f1f5f9;
+            padding: 2px 12px;
+        }
+
+        /* PANEL DERECHO: TABLA ULTRACOMPACTA */
+        .main-content {
+            flex: 2.5;
+            min-width: 480px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 14px 18px;
+        }
+        .main-content h2 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #b91c1c;
+            margin-bottom: 8px;
+            border-left: 3px solid #b91c1c;
+            padding-left: 10px;
+        }
+
+        /* TABLA - TEXTO MICRO, MÁRGENES CERO, CELDAS COMPACTAS */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.62rem;   /* letra aún más pequeña */
+            line-height: 1.2;
+        }
+        th, td {
+            padding: 5px 4px !important;   /* reducción drástica vertical/horizontal */
+            text-align: left;
+            border-bottom: 1px solid #edf2f7;
+        }
+        th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #b45309;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            padding: 4px 4px !important;
+        }
+        /* Filas de módulos, puertas y herrajes aún más prietas */
+        .row-modulo td {
+            font-weight: 600;
+            background-color: #fffaf5;
+            padding: 5px 4px !important;
+        }
+        .row-puerta td, .row-herraje td {
+            font-size: 0.58rem !important;
+            padding: 3px 4px !important;
+            padding-left: 18px !important;
+        }
+        .color-encargo {
+            color: #e67e22 !important;
+            font-weight: 600;
+        }
+        .total-container {
+            margin-top: 14px;
+            background: #fef9f0;
+            padding: 8px 16px;
+            border: 1px solid #fde68a;
+        }
+        .total-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid #f1e0c5;
+            font-size: 0.7rem;
+        }
+        .total-line.grand-total {
+            border-top: 2px solid #b91c1c;
+            border-bottom: none;
+            padding-top: 6px;
+            font-weight: 800;
+            font-size: 0.8rem;
+        }
+        .grand-total .total-amount {
+            color: #b91c1c;
+            font-size: 1rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 14px;
+        }
+        .action-buttons button {
+            padding: 4px 16px;
+            border-radius: 0px;
+            font-size: 0.65rem;
+            background: #e2e8f0;
+        }
+        .btn-danger-clear {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .debug-box { display: none; }
+        @media (max-width: 800px) {
+            body { padding: 12px; }
+            .dashboard { flex-direction: column; }
+            .sidebar-form { position: relative; top: 0; }
+        }
+        @media print {
+            .sidebar-form, .global-header, .action-buttons, .patas-selector, .modelo-selector, .btn-add-large { display: none; }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>Presupuestador de Cocinas</h1>
-    <div class="status-bar no-print"><span>📊 Sistema de presupuestación</span><span id="estadoDatos" class="status-not-loaded">Cargando datos...</span></div>
-    <div id="loadingMsg" class="loading">⏳ Cargando catálogo de productos...</div>
-    <div id="presupuestadorSection" style="display: none;">
-        <div class="patas-selector no-print">
-            <label>🔩 Configuración de patas</label>
-            <div class="patas-label">
-                <label><input type="radio" name="tipoPata" value="PATA_H10" checked> PATA_H10 · 4 por módulo</label>
-                <label><input type="radio" name="tipoPata" value="PATA_H15"> PATA_H15 · 4 por módulo</label>
-                <label><input type="radio" name="tipoPata" value="NINGUNA"> ❌ Sin patas</label>
-            </div>
-            <div class="info-text">ℹ️ Los módulos ALTOS no llevan patas independientemente de esta selección.</div>
+    <div class="global-header no-print">
+        <div class="logo-icon" style="display: inline-block;">
+            <svg width="28" height="28" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="12" width="32" height="28" rx="2" stroke="#b91c1c" stroke-width="1.5" fill="#FFF7ED" />
+                <line x1="12" y1="20" x2="36" y2="20" stroke="#b91c1c" stroke-width="1.2" stroke-dasharray="2 2" />
+                <line x1="12" y1="28" x2="36" y2="28" stroke="#b91c1c" stroke-width="1.2" stroke-dasharray="2 2" />
+                <line x1="20" y1="12" x2="20" y2="40" stroke="#b91c1c" stroke-width="1" stroke-dasharray="2 3" />
+                <line x1="28" y1="12" x2="28" y2="40" stroke="#b91c1c" stroke-width="1" stroke-dasharray="2 3" />
+                <circle cx="24" cy="16" r="2" fill="#b91c1c" fill-opacity="0.6" stroke="#b91c1c" stroke-width="1" />
+            </svg>
         </div>
-        <div class="section">
+        <h1>Presupuestador Cocinas <span class="subtitulo">Tamesis / Cloe</span></h1>
+        <div style="flex:1"></div>
+        <span id="estadoDatos" class="status-badge">Cargando...</span>
+    </div>
+
+    <div class="dashboard">
+        <!-- Lateral izquierdo: rojo, sin bordes redondos, compacto -->
+        <div class="sidebar-form no-print">
             <h2>📦 1. Añadir elemento</h2>
-            <div class="grid-3">
-                <div><label>📂 Categoría</label><select id="selectCategoria"><option value="">-- Selecciona --</option></select></div>
-                <div><label>🎨 Color / Acabado</label><select id="selectColor" disabled><option value="">-- Primero categoría --</option></select></div>
-                <div><label>📐 Artículo</label><select id="selectNombre" disabled><option value="">-- Primero color --</option></select></div>
+            <div class="form-group">
+                <label>📂 CATEGORÍA</label>
+                <select id="selectCategoria"><option value="">-- Selecciona --</option></select>
+            </div>
+            <div class="form-group">
+                <label>🎨 COLOR / ACABADO</label>
+                <select id="selectColor" disabled><option value="">-- Primero categoría --</option></select>
+            </div>
+            <div class="form-group">
+                <label>📐 ARTÍCULO</label>
+                <select id="selectNombre" disabled><option value="">-- Primero color --</option></select>
             </div>
             <div class="modelo-selector">
-                <label>🚪 Modelo de puerta</label>
+                <label style="color:#ffdd99;">🚪 MODELO PUERTA</label>
                 <div class="modelo-label">
                     <label><input type="radio" name="modeloPuerta" value="TAMESIS_COLOR" checked> Tamesis · color a elegir</label>
                     <label><input type="radio" name="modeloPuerta" value="CLOE"> Cloe</label>
                 </div>
             </div>
-            <div class="grid-3" style="margin-top: 20px;">
-                <div>
-                    <label>💰 Precio unitario (€)</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="number" id="inputPrecio" step="0.01" disabled style="flex: 1;">
-                        <button id="btnModificarPrecio" style="width: 55px; background: #555;">✏️</button>
-                    </div>
+            <div class="form-group">
+                <label>💰 PRECIO UNITARIO (€)</label>
+                <div class="precio-row">
+                    <input type="number" id="inputPrecio" step="0.01" disabled placeholder="Auto">
+                    <button id="btnModificarPrecio">✏️</button>
                 </div>
-                <div><label>🔢 Cantidad</label><input type="number" id="inputCantidad" value="1" min="1"></div>
-                <div><button class="btn-add" id="btnAgregar" style="margin-top: 28px;">➕ Añadir</button></div>
             </div>
+            <div class="form-group">
+                <label>🔢 CANTIDAD</label>
+                <input type="number" id="inputCantidad" value="1" min="1">
+            </div>
+            <div class="patas-selector">
+                <label style="color:#ffdd99;">🔩 PATAS</label>
+                <div class="patas-label">
+                    <label><input type="radio" name="tipoPata" value="PATA_H10" checked> PATA_H10 (4 uds)</label>
+                    <label><input type="radio" name="tipoPata" value="PATA_H15"> PATA_H15 (4 uds)</label>
+                    <label><input type="radio" name="tipoPata" value="NINGUNA"> ❌ Sin patas</label>
+                </div>
+                <div class="info-text">ℹ️ ALTOS no llevan patas</div>
+            </div>
+            <button class="btn-add-large" id="btnAgregar">➕ AÑADIR</button>
         </div>
-        <div class="section">
-            <h2>📋 2. Presupuesto</h2>
-            <div style="overflow-x: auto;">
+
+        <!-- Panel derecho: tabla compacta -->
+        <div class="main-content">
+            <h2>📋 2. Presupuesto detallado</h2>
+            <div class="table-wrapper">
                 <table id="tablaPresupuesto">
-                    <thead><tr><th>Categoría</th><th>Color</th><th>Artículo</th><th>Medidas</th><th>Cant.</th><th>P.Unitario</th><th>Total</th><th></th></tr></thead>
-                    <tbody></tbody>
+                    <thead>
+                        <tr><th>Categoría</th><th>Color</th><th>Artículo</th><th>Medidas</th><th>Cant.</th><th>P.Unit</th><th>Total</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="8" style="text-align:center; padding:8px;">Añade módulos desde lateral</td></tr>
+                    </tbody>
                 </table>
             </div>
             <div class="total-container">
@@ -136,282 +352,162 @@
                 <div class="total-line"><span>📊 IVA (21%)</span><span id="ivaPrecio">0.00 €</span></div>
                 <div class="total-line grand-total"><span>💵 TOTAL</span><span id="totalConIva">0.00 €</span></div>
             </div>
-            <div class="action-buttons no-print">
-                <button onclick="window.print()" class="btn-secondary">🖨️ Imprimir</button>
-                <button id="btnReset" class="btn-danger">🗑️ Resetear</button>
+            <div class="action-buttons">
+                <button onclick="window.print()">🖨️ Imprimir</button>
+                <button id="btnReset" class="btn-danger-clear">🗑️ Resetear</button>
             </div>
         </div>
-        <div id="debugPanel" class="debug-box no-print" style="display: none;"><strong>🔍 DEPURACIÓN</strong><br><div id="debugInfo"></div></div>
     </div>
-</div>
-<script>
-    const EXCEL_URL = "https://montoyeta-star.github.io/bdestaeslabuena/modulos.xlsx";
-    const IVA_PORCENTAJE = 21;
-    let productosDB = [];
-    let puertasDB = [];
-    let herrajesDB = {};
-    let basesDB = {};
-    let presupuestoActual = [];
-    let articuloSeleccionado = null;
+    <div id="loadingMsg" style="display: none;"></div>
 
-    const estadoDatos = document.getElementById('estadoDatos');
-    const loadingMsg = document.getElementById('loadingMsg');
-    const presupuestadorSection = document.getElementById('presupuestadorSection');
-    const debugInfo = document.getElementById('debugInfo');
-    const debugPanel = document.getElementById('debugPanel');
-    const selectCategoria = document.getElementById('selectCategoria');
-    const selectColor = document.getElementById('selectColor');
-    const selectNombre = document.getElementById('selectNombre');
-    const inputPrecio = document.getElementById('inputPrecio');
-    const inputCantidad = document.getElementById('inputCantidad');
-    const btnModificarPrecio = document.getElementById('btnModificarPrecio');
-    const btnAgregar = document.getElementById('btnAgregar');
-    const btnReset = document.getElementById('btnReset');
-    const tablaPresupuesto = document.getElementById('tablaPresupuesto').querySelector('tbody');
-    const subtotalSpan = document.getElementById('subtotalPrecio');
-    const ivaSpan = document.getElementById('ivaPrecio');
-    const totalConIvaSpan = document.getElementById('totalConIva');
+    <script>
+        const EXCEL_URL = "https://montoyeta-star.github.io/bdestaeslabuena/modulos.xlsx";
+        const IVA_PORCENTAJE = 21;
+        let productosDB = [];
+        let puertasDB = [];
+        let herrajesDB = {};
+        let basesDB = {};
+        let presupuestoActual = [];
+        let articuloSeleccionado = null;
 
-    function addDebug(msg) { debugPanel.style.display = 'block'; debugInfo.innerHTML += new Date().toLocaleTimeString() + ': ' + msg + '<br>'; console.log(msg); }
-    function getModeloPuertaSeleccionado() { const radios = document.getElementsByName('modeloPuerta'); for (let r of radios) if (r.checked) return r.value; return 'TAMESIS_COLOR'; }
-    function getTipoPataSeleccionado() { const radios = document.getElementsByName('tipoPata'); for (let r of radios) if (r.checked) return r.value; return 'PATA_H10'; }
-    function debeLlevarPatas(modulo) { return modulo.categoria.toUpperCase() !== 'ALTOS'; }
-    function agregarPatas(modulo, cantidad, tipoPata) {
-        if (tipoPata === 'NINGUNA') { addDebug(`❌ Sin patas`); return null; }
-        if (!debeLlevarPatas(modulo)) return null;
-        const precioPata = herrajesDB[tipoPata] || 5;
-        const totalPatas = 4 * cantidad;
-        addDebug(`📊 PATAS: ${totalPatas} x ${tipoPata} = ${(totalPatas * precioPata).toFixed(2)}€`);
-        return { nombre: tipoPata, cantidad: totalPatas, precioUnitario: precioPata, total: totalPatas * precioPata };
-    }
-    function agregarColgador(modulo, cantidad) {
-        if (modulo.categoria.toUpperCase() !== 'ALTOS') return null;
-        const precioColgador = herrajesDB['Colgador'] || 5;
-        const totalColgadores = cantidad;
-        addDebug(`📌 COLGADOR: ${totalColgadores} x Colgador = ${(totalColgadores * precioColgador).toFixed(2)}€`);
-        return { nombre: 'Colgador', cantidad: totalColgadores, precioUnitario: precioColgador, total: totalColgadores * precioColgador };
-    }
-    function calcularBisagras(puertaInfo, cantidadPuertas) {
-        const numBisagras = puertaInfo.altoPuerta > 798 ? 3 : 2;
-        const totalBisagras = numBisagras * cantidadPuertas;
-        if (totalBisagras === 0) return null;
-        const precioBisagra = herrajesDB['BISAGRA_SENSYS'] || 0;
-        addDebug(`🚪 BISAGRAS: ${totalBisagras} x ${precioBisagra.toFixed(2)}€ = ${(totalBisagras * precioBisagra).toFixed(2)}€`);
-        return { nombre: `Bisagra Sensys (${numBisagras}/puerta)`, cantidad: totalBisagras, precioUnitario: precioBisagra, total: totalBisagras * precioBisagra };
-    }
-    function calcularPuertas(modulo, cantidad, modeloPuerta) {
-        let numPuertas = modulo.ancho_mm > 600 ? 2 : 1;
-        let anchoPuerta = numPuertas === 2 ? (modulo.ancho_mm / 2) - 3 : modulo.ancho_mm - 3;
-        let altoPuerta = modulo.alto_mm - 3;
-        if (modulo.nombre.toUpperCase().includes('ESCOBERO')) { numPuertas = 2; altoPuerta = 1098; }
-        anchoPuerta = Math.round(anchoPuerta); altoPuerta = Math.round(altoPuerta);
-        let precioPuerta = 0, nombrePuerta = `Puerta ${modeloPuerta} ${anchoPuerta}x${altoPuerta} mm`;
-        for (let p of puertasDB) {
-            if ((p.categoria || '').toUpperCase() === modeloPuerta && Math.abs(p.ancho_mm - anchoPuerta) <= 2 && Math.abs(p.alto_mm - altoPuerta) <= 2) {
-                precioPuerta = p.precio_venta; nombrePuerta = p.nombre || nombrePuerta;
-                addDebug(`✅ Puerta: ${nombrePuerta} = ${precioPuerta}€`); break;
-            }
+        const estadoDatos = document.getElementById('estadoDatos');
+        const loadingMsg = document.getElementById('loadingMsg');
+        const selectCategoria = document.getElementById('selectCategoria');
+        const selectColor = document.getElementById('selectColor');
+        const selectNombre = document.getElementById('selectNombre');
+        const inputPrecio = document.getElementById('inputPrecio');
+        const inputCantidad = document.getElementById('inputCantidad');
+        const btnModificarPrecio = document.getElementById('btnModificarPrecio');
+        const btnAgregar = document.getElementById('btnAgregar');
+        const btnReset = document.getElementById('btnReset');
+        const tablaPresupuesto = document.getElementById('tablaPresupuesto').querySelector('tbody');
+        const subtotalSpan = document.getElementById('subtotalPrecio');
+        const ivaSpan = document.getElementById('ivaPrecio');
+        const totalConIvaSpan = document.getElementById('totalConIva');
+
+        function getModeloPuertaSeleccionado() { const radios = document.getElementsByName('modeloPuerta'); for (let r of radios) if (r.checked) return r.value; return 'TAMESIS_COLOR'; }
+        function getTipoPataSeleccionado() { const radios = document.getElementsByName('tipoPata'); for (let r of radios) if (r.checked) return r.value; return 'PATA_H10'; }
+        function debeLlevarPatas(modulo) { return modulo.categoria.toUpperCase() !== 'ALTOS'; }
+        function agregarPatas(modulo, cantidad, tipoPata) {
+            if (tipoPata === 'NINGUNA') return null;
+            if (!debeLlevarPatas(modulo)) return null;
+            const precioPata = herrajesDB[tipoPata] || 5;
+            const totalPatas = 4 * cantidad;
+            return { nombre: tipoPata, cantidad: totalPatas, precioUnitario: precioPata, total: totalPatas * precioPata };
         }
-        return { numPuertas, anchoPuerta, altoPuerta, precioPuerta, nombrePuerta };
-    }
-
-    async function cargarExcel() {
-        try {
-            estadoDatos.innerHTML = '📖 Leyendo...';
-            loadingMsg.style.display = 'block';
-            const response = await fetch(EXCEL_URL);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const buffer = await response.arrayBuffer();
-            const workbook = XLSX.read(buffer, { type: 'array' });
-            const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-            productosDB = []; puertasDB = []; herrajesDB = {}; basesDB = {};
-            for (let item of json) {
-                let tipo = '';
-                for (let key in item) { const v = String(item[key] || '').toUpperCase(); if (v === 'MODULO') { tipo = 'MODULO'; break; } if (v === 'PUERTA') { tipo = 'PUERTA'; break; } if (v === 'HERRAJE') { tipo = 'HERRAJE'; break; } if (v === 'BASE') { tipo = 'BASE'; break; } }
-                if (!tipo) continue;
-                let precio = 0;
-                for (let key in item) { const k = key.toLowerCase(); if (k === 'precio_venta') { let val = String(item[key]).replace(',', '.'); precio = parseFloat(val) || 0; break; } }
-                let ancho = 0, alto = 0;
-                for (let key in item) { const k = key.toLowerCase(); if (k === 'ancho_cm') ancho = parseFloat(item[key]) || 0; if (k === 'alto_cm') alto = parseFloat(item[key]) || 0; }
-                let categoria = '', nombre = '', color = '';
-                for (let key in item) { const k = key.toLowerCase(); if (k === 'categoria') categoria = String(item[key] || '').trim().toUpperCase(); if (k === 'nombre') nombre = String(item[key] || '').trim(); if (k === 'color_acabado') color = String(item[key] || '').trim().toUpperCase(); }
-                if (tipo === 'MODULO' && categoria && nombre) { 
-                    if (categoria === 'CACEROLEROS' && (precio === 0 || isNaN(precio))) precio = 5;
-                    productosDB.push({ tipo, categoria, color, nombre, alto_mm: alto, ancho_mm: ancho, precio_venta: precio || 5 }); 
-                }
-                if (tipo === 'PUERTA' && ancho > 0 && alto > 0) { puertasDB.push({ categoria, nombre, alto_mm: alto, ancho_mm: ancho, precio_venta: precio, color }); }
-                if (tipo === 'HERRAJE' && nombre) { herrajesDB[nombre.toUpperCase()] = precio; addDebug(`🔩 Herraje: ${nombre} = ${precio.toFixed(2)}€`); }
-                if (tipo === 'BASE' && nombre) { basesDB[nombre.toUpperCase()] = basesDB[nombre.toUpperCase()] || {}; basesDB[nombre.toUpperCase()][ancho] = precio; addDebug(`📦 Base: ${nombre} ancho ${ancho}mm = ${precio.toFixed(2)}€`); }
-            }
-            if (productosDB.length === 0) throw new Error('No hay módulos');
-            estadoDatos.innerHTML = `✅ ${productosDB.length} módulos · ${puertasDB.length} puertas · ${Object.keys(herrajesDB).length} herrajes`;
-            estadoDatos.className = 'status-loaded';
-            loadingMsg.style.display = 'none';
-            presupuestadorSection.style.display = 'block';
-            cargarCategorias();
-        } catch (err) { estadoDatos.innerHTML = `❌ Error: ${err.message}`; loadingMsg.innerHTML = `Error: ${err.message}`; addDebug(`ERROR: ${err.message}`); }
-    }
-
-    function cargarCategorias() {
-        const cats = [...new Set(productosDB.map(p => p.categoria))];
-        selectCategoria.innerHTML = '<option value="">-- Selecciona --</option>';
-        cats.forEach(c => selectCategoria.innerHTML += `<option value="${c}">${c}</option>`);
-        selectCategoria.disabled = false;
-        resetSelects();
-    }
-    function resetSelects() { selectColor.innerHTML = '<option value="">-- Primero categoría --</option>'; selectColor.disabled = true; selectNombre.innerHTML = '<option value="">-- Primero color --</option>'; selectNombre.disabled = true; inputPrecio.value = ''; inputPrecio.disabled = true; articuloSeleccionado = null; }
-    selectCategoria.addEventListener('change', () => {
-        const cat = selectCategoria.value;
-        if (!cat) { resetSelects(); return; }
-        const colores = [...new Set(productosDB.filter(p => p.categoria === cat).map(p => p.color))];
-        selectColor.innerHTML = '<option value="">-- Selecciona Color/Acabado --</option>';
-        colores.forEach(c => selectColor.innerHTML += `<option value="${c}">${c}</option>`);
-        selectColor.disabled = false;
-        selectNombre.innerHTML = '<option value="">-- Primero color --</option>';
-        selectNombre.disabled = true;
-    });
-    selectColor.addEventListener('change', () => {
-        const cat = selectCategoria.value, col = selectColor.value;
-        if (!cat || !col) { selectNombre.disabled = true; return; }
-        const items = productosDB.filter(p => p.categoria === cat && p.color === col);
-        selectNombre.innerHTML = '<option value="">-- Selecciona --</option>';
-        items.forEach(i => { selectNombre.innerHTML += `<option value="${i.nombre}" data-alto="${i.alto_mm}" data-ancho="${i.ancho_mm}" data-precio="${i.precio_venta}">${i.nombre} (${i.ancho_mm}×${i.alto_mm} mm) - ${i.precio_venta.toFixed(2)}€</option>`; });
-        selectNombre.disabled = false;
-    });
-    selectNombre.addEventListener('change', () => {
-        const cat = selectCategoria.value, col = selectColor.value, nom = selectNombre.value;
-        const opt = selectNombre.options[selectNombre.selectedIndex];
-        if (!nom) { articuloSeleccionado = null; return; }
-        articuloSeleccionado = productosDB.find(p => p.categoria === cat && p.color === col && p.nombre === nom);
-        if (articuloSeleccionado && opt) { articuloSeleccionado.alto_mm = parseInt(opt.dataset.alto) || articuloSeleccionado.alto_mm; articuloSeleccionado.ancho_mm = parseInt(opt.dataset.ancho) || articuloSeleccionado.ancho_mm; articuloSeleccionado.precio_venta = parseFloat(opt.dataset.precio) || articuloSeleccionado.precio_venta; inputPrecio.value = articuloSeleccionado.precio_venta; inputPrecio.disabled = false; }
-    });
-    btnModificarPrecio.addEventListener('click', () => { if (articuloSeleccionado) { const np = parseFloat(inputPrecio.value); if (!isNaN(np) && np >= 0) { articuloSeleccionado.precio_venta = np; alert('✅ Precio modificado'); } } });
-
-    btnAgregar.addEventListener('click', () => {
-        if (!articuloSeleccionado) { alert('❌ Selecciona un artículo'); return; }
-        const cantidad = parseInt(inputCantidad.value);
-        if (isNaN(cantidad) || cantidad <= 0) return;
-        const modeloPuerta = getModeloPuertaSeleccionado();
-        const tipoPata = getTipoPataSeleccionado();
-        addDebug(`\n=== ${cantidad} x ${articuloSeleccionado.nombre} (${articuloSeleccionado.categoria}) ===`);
-        const esCacerolero = articuloSeleccionado.categoria === "CACEROLEROS";
-        
-        if (esCacerolero) {
-            addDebug(`🧺 PROCESANDO CACEROLEROS: ${articuloSeleccionado.nombre}`);
-            
-            // 1. Módulo principal
-            const precioModulo = (articuloSeleccionado.precio_venta > 0) ? articuloSeleccionado.precio_venta : 5;
-            presupuestoActual.push({
-                categoria: articuloSeleccionado.categoria,
-                color: articuloSeleccionado.color,
-                nombre: articuloSeleccionado.nombre,
-                medida: `${articuloSeleccionado.ancho_mm}×${articuloSeleccionado.alto_mm} mm`,
-                cantidad: cantidad,
-                precioUnitario: precioModulo,
-                total: cantidad * precioModulo,
-                tipo: 'modulo'
-            });
-            
-            // 2. Puertas (2 puertas por módulo, una encima de otra)
-            const altoModulo = articuloSeleccionado.alto_mm;
-            // FÓRMULA: (alto_modulo / 2) - 2 mm
-            let altoPuerta = (altoModulo / 2) - 2;
-            // FÓRMULA: ancho_modulo - 3 mm
-            const anchoPuerta = articuloSeleccionado.ancho_mm - 3;
-            
-            const totalPuertas = 2 * cantidad;
-            let precioPuerta = 0;
-            let nombrePuerta = `Puerta ${modeloPuerta} ${Math.round(anchoPuerta)}x${Math.round(altoPuerta)} mm`;
-            
-            addDebug(`📐 Cálculo puerta CACEROLERO: alto_modulo=${altoModulo} → alto_puerta=${altoPuerta}mm, ancho_modulo=${articuloSeleccionado.ancho_mm} → ancho_puerta=${anchoPuerta}mm`);
-            
-            // Buscar la puerta en la base de datos
+        function agregarColgador(modulo, cantidad) {
+            if (modulo.categoria.toUpperCase() !== 'ALTOS') return null;
+            const precioColgador = herrajesDB['Colgador'] || 5;
+            const totalColgadores = cantidad;
+            return { nombre: 'Colgador', cantidad: totalColgadores, precioUnitario: precioColgador, total: totalColgadores * precioColgador };
+        }
+        function calcularBisagras(puertaInfo, cantidadPuertas) {
+            const numBisagras = puertaInfo.altoPuerta > 798 ? 3 : 2;
+            const totalBisagras = numBisagras * cantidadPuertas;
+            if (totalBisagras === 0) return null;
+            const precioBisagra = herrajesDB['BISAGRA_SENSYS'] || 0;
+            if (precioBisagra <= 0) return null;
+            return { nombre: `Bisagra Sensys (${numBisagras}/puerta)`, cantidad: totalBisagras, precioUnitario: precioBisagra, total: totalBisagras * precioBisagra };
+        }
+        function calcularPuertas(modulo, cantidad, modeloPuerta) {
+            let numPuertas = modulo.ancho_mm > 600 ? 2 : 1;
+            let anchoPuerta = numPuertas === 2 ? (modulo.ancho_mm / 2) - 3 : modulo.ancho_mm - 3;
+            let altoPuerta = modulo.alto_mm - 3;
+            if (modulo.nombre.toUpperCase().includes('ESCOBERO')) { numPuertas = 2; altoPuerta = 1098; }
+            anchoPuerta = Math.round(anchoPuerta); altoPuerta = Math.round(altoPuerta);
+            let precioPuerta = 0, nombrePuerta = `Puerta ${modeloPuerta} ${anchoPuerta}x${altoPuerta} mm`;
             for (let p of puertasDB) {
-                const modeloDB = (p.categoria || '').toUpperCase();
-                if (modeloDB === modeloPuerta &&
-                    Math.abs(p.ancho_mm - anchoPuerta) <= 2 && 
-                    Math.abs(p.alto_mm - altoPuerta) <= 2) {
-                    precioPuerta = p.precio_venta;
-                    nombrePuerta = p.nombre || nombrePuerta;
-                    addDebug(`✅ Puerta CACEROLERO encontrada: ${nombrePuerta} = ${precioPuerta}€ (ancho: ${p.ancho_mm}, alto: ${p.alto_mm})`);
+                if ((p.categoria || '').toUpperCase() === modeloPuerta && Math.abs(p.ancho_mm - anchoPuerta) <= 2 && Math.abs(p.alto_mm - altoPuerta) <= 2) {
+                    precioPuerta = p.precio_venta; nombrePuerta = p.nombre || nombrePuerta;
                     break;
                 }
             }
-            
-            // Si no encontró la puerta, usar precio por defecto
-            if (precioPuerta === 0) {
-                precioPuerta = 15;
-                addDebug(`⚠️ No se encontró puerta exacta para ${Math.round(anchoPuerta)}x${Math.round(altoPuerta)}mm, usando precio por defecto: ${precioPuerta}€`);
+            return { numPuertas, anchoPuerta, altoPuerta, precioPuerta, nombrePuerta };
+        }
+
+        async function cargarExcel() {
+            try {
+                estadoDatos.innerText = '📖 cargando...';
+                loadingMsg.style.display = 'block';
+                const response = await fetch(EXCEL_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const buffer = await response.arrayBuffer();
+                const workbook = XLSX.read(buffer, { type: 'array' });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                productosDB = []; puertasDB = []; herrajesDB = {}; basesDB = {};
+                for (let item of json) {
+                    let tipo = '';
+                    for (let key in item) { const v = String(item[key] || '').toUpperCase(); if (v === 'MODULO') { tipo = 'MODULO'; break; } if (v === 'PUERTA') { tipo = 'PUERTA'; break; } if (v === 'HERRAJE') { tipo = 'HERRAJE'; break; } if (v === 'BASE') { tipo = 'BASE'; break; } }
+                    if (!tipo) continue;
+                    let precio = 0;
+                    for (let key in item) { const k = key.toLowerCase(); if (k === 'precio_venta') { let val = String(item[key]).replace(',', '.'); precio = parseFloat(val) || 0; break; } }
+                    let ancho = 0, alto = 0;
+                    for (let key in item) { const k = key.toLowerCase(); if (k === 'ancho_cm') ancho = parseFloat(item[key]) || 0; if (k === 'alto_cm') alto = parseFloat(item[key]) || 0; }
+                    let categoria = '', nombre = '', color = '';
+                    for (let key in item) { const k = key.toLowerCase(); if (k === 'categoria') categoria = String(item[key] || '').trim().toUpperCase(); if (k === 'nombre') nombre = String(item[key] || '').trim(); if (k === 'color_acabado') color = String(item[key] || '').trim().toUpperCase(); }
+                    if (tipo === 'MODULO' && categoria && nombre) {
+                        if (categoria === 'CACEROLEROS' && (precio === 0 || isNaN(precio))) precio = 5;
+                        productosDB.push({ tipo, categoria, color, nombre, alto_mm: alto, ancho_mm: ancho, precio_venta: precio || 5 });
+                    }
+                    if (tipo === 'PUERTA' && ancho > 0 && alto > 0) { puertasDB.push({ categoria, nombre, alto_mm: alto, ancho_mm: ancho, precio_venta: precio, color }); }
+                    if (tipo === 'HERRAJE' && nombre) { herrajesDB[nombre.toUpperCase()] = precio; }
+                    if (tipo === 'BASE' && nombre) { basesDB[nombre.toUpperCase()] = basesDB[nombre.toUpperCase()] || {}; basesDB[nombre.toUpperCase()][ancho] = precio; }
+                }
+                if (productosDB.length === 0) throw new Error('No hay módulos');
+                estadoDatos.innerText = `✅ ${productosDB.length} módulos`;
+                estadoDatos.style.background = "#e8f0e8";
+                loadingMsg.style.display = 'none';
+                cargarCategorias();
+            } catch (err) {
+                estadoDatos.innerText = `❌ ${err.message}`;
+                loadingMsg.innerText = `Error: ${err.message}`;
+                console.error(err);
             }
-            
-            if (totalPuertas > 0 && precioPuerta > 0) {
-                presupuestoActual.push({
-                    categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`,
-                    color: modeloPuerta === 'TAMESIS_COLOR' ? '🎨 A ELEGIR, DE ENCARGO' : articuloSeleccionado.color,
-                    nombre: nombrePuerta,
-                    medida: `${Math.round(anchoPuerta)}×${Math.round(altoPuerta)} mm`,
-                    cantidad: totalPuertas,
-                    precioUnitario: precioPuerta,
-                    total: totalPuertas * precioPuerta,
-                    tipo: 'puerta'
-                });
-            }
-            
-            // 3. CACEROLEROS (herraje) x2 por módulo
-            const totalCaceroleros = 2 * cantidad;
-            const precioHerraje = herrajesDB['CACEROLERO'] || 50;
-            if (precioHerraje > 0) {
-                presupuestoActual.push({
-                    categoria: "🔩 HERRAJES",
-                    color: '',
-                    nombre: "CACEROLERO (herraje)",
-                    medida: "por cacerolero",
-                    cantidad: totalCaceroleros,
-                    precioUnitario: precioHerraje,
-                    total: totalCaceroleros * precioHerraje,
-                    tipo: 'herraje'
-                });
-            }
-            
-            // 4. Bases CACEROLERO x2 por módulo
-            const anchoModulo = articuloSeleccionado.ancho_mm;
-            let precioBase = 9;
-            if (basesDB['CACEROLERO'] && basesDB['CACEROLERO'][anchoModulo]) {
-                precioBase = basesDB['CACEROLERO'][anchoModulo];
-                addDebug(`✅ Base CACEROLERO encontrada para ancho ${anchoModulo} mm → ${precioBase}€`);
-            } else {
-                addDebug(`⚠️ No se encontró base CACEROLERO para ancho ${anchoModulo} mm, usando precio por defecto: ${precioBase}€`);
-            }
-            
-            presupuestoActual.push({
-                categoria: "🔩 HERRAJES",
-                color: '',
-                nombre: `BASE CACEROLERO (ancho ${anchoModulo} mm)`,
-                medida: "2 por módulo",
-                cantidad: totalCaceroleros,
-                precioUnitario: precioBase,
-                total: totalCaceroleros * precioBase,
-                tipo: 'herraje'
-            });
-            
-            // 5. Patas (sin bisagras, sin colgador)
-            const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata);
-            if (patas) {
-                presupuestoActual.push({
-                    categoria: "🔩 HERRAJES",
-                    color: '',
-                    nombre: `${patas.nombre} (4 patas/módulo)`,
-                    medida: patas.nombre,
-                    cantidad: patas.cantidad,
-                    precioUnitario: patas.precioUnitario,
-                    total: patas.total,
-                    tipo: 'herraje'
-                });
-            }
-            
-            addDebug(`✅ CACEROLERO añadido correctamente con ${totalPuertas} puertas (2 por módulo, alto_puerta=${altoPuerta}mm, ancho_puerta=${anchoPuerta}mm)`);
-        } else {
-            // Lógica para otras categorías (BAJOS_ALMACENAJE, ALTOS, etc.)
+        }
+
+        function cargarCategorias() {
+            const cats = [...new Set(productosDB.map(p => p.categoria))];
+            selectCategoria.innerHTML = '<option value="">-- Selecciona --</option>';
+            cats.forEach(c => selectCategoria.innerHTML += `<option value="${c}">${c}</option>`);
+            selectCategoria.disabled = false;
+            resetSelects();
+        }
+        function resetSelects() { selectColor.innerHTML = '<option value="">-- Primero categoría --</option>'; selectColor.disabled = true; selectNombre.innerHTML = '<option value="">-- Primero color --</option>'; selectNombre.disabled = true; inputPrecio.value = ''; inputPrecio.disabled = true; articuloSeleccionado = null; }
+        selectCategoria.addEventListener('change', () => {
+            const cat = selectCategoria.value;
+            if (!cat) { resetSelects(); return; }
+            const colores = [...new Set(productosDB.filter(p => p.categoria === cat).map(p => p.color))];
+            selectColor.innerHTML = '<option value="">-- Selecciona Color/Acabado --</option>';
+            colores.forEach(c => selectColor.innerHTML += `<option value="${c}">${c}</option>`);
+            selectColor.disabled = false;
+            selectNombre.innerHTML = '<option value="">-- Primero color --</option>';
+            selectNombre.disabled = true;
+        });
+        selectColor.addEventListener('change', () => {
+            const cat = selectCategoria.value, col = selectColor.value;
+            if (!cat || !col) { selectNombre.disabled = true; return; }
+            const items = productosDB.filter(p => p.categoria === cat && p.color === col);
+            selectNombre.innerHTML = '<option value="">-- Selecciona --</option>';
+            items.forEach(i => { selectNombre.innerHTML += `<option value="${i.nombre}" data-alto="${i.alto_mm}" data-ancho="${i.ancho_mm}" data-precio="${i.precio_venta}">${i.nombre} (${i.ancho_mm}×${i.alto_mm} mm) - ${i.precio_venta.toFixed(2)}€</option>`; });
+            selectNombre.disabled = false;
+        });
+        selectNombre.addEventListener('change', () => {
+            const cat = selectCategoria.value, col = selectColor.value, nom = selectNombre.value;
+            const opt = selectNombre.options[selectNombre.selectedIndex];
+            if (!nom) { articuloSeleccionado = null; return; }
+            articuloSeleccionado = productosDB.find(p => p.categoria === cat && p.color === col && p.nombre === nom);
+            if (articuloSeleccionado && opt) { articuloSeleccionado.alto_mm = parseInt(opt.dataset.alto) || articuloSeleccionado.alto_mm; articuloSeleccionado.ancho_mm = parseInt(opt.dataset.ancho) || articuloSeleccionado.ancho_mm; articuloSeleccionado.precio_venta = parseFloat(opt.dataset.precio) || articuloSeleccionado.precio_venta; inputPrecio.value = articuloSeleccionado.precio_venta; inputPrecio.disabled = false; }
+        });
+        btnModificarPrecio.addEventListener('click', () => { if (articuloSeleccionado) { const np = parseFloat(inputPrecio.value); if (!isNaN(np) && np >= 0) { articuloSeleccionado.precio_venta = np; alert('✅ Precio modificado'); } } });
+
+        btnAgregar.addEventListener('click', () => {
+            if (!articuloSeleccionado) { alert('❌ Selecciona artículo'); return; }
+            const cantidad = parseInt(inputCantidad.value);
+            if (isNaN(cantidad) || cantidad <= 0) return;
+            const modeloPuerta = getModeloPuertaSeleccionado();
+            const tipoPata = getTipoPataSeleccionado();
+            const esCacerolero = articuloSeleccionado.categoria === "CACEROLEROS";
+
             presupuestoActual.push({
                 categoria: articuloSeleccionado.categoria,
                 color: articuloSeleccionado.color,
@@ -422,89 +518,58 @@
                 total: cantidad * articuloSeleccionado.precio_venta,
                 tipo: 'modulo'
             });
-            
-            const puerta = calcularPuertas(articuloSeleccionado, cantidad, modeloPuerta);
-            const totalPuertas = puerta.numPuertas * cantidad;
-            const colorDisplay = modeloPuerta === 'TAMESIS_COLOR' ? '🎨 A ELEGIR, DE ENCARGO' : (articuloSeleccionado.color || '');
-            
-            if (totalPuertas > 0 && puerta.precioPuerta > 0) {
-                presupuestoActual.push({
-                    categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`,
-                    color: colorDisplay,
-                    nombre: puerta.nombrePuerta,
-                    medida: `${puerta.anchoPuerta}×${puerta.altoPuerta} mm`,
-                    cantidad: totalPuertas,
-                    precioUnitario: puerta.precioPuerta,
-                    total: totalPuertas * puerta.precioPuerta,
-                    tipo: 'puerta'
-                });
-                
-                const bisagras = calcularBisagras(puerta, totalPuertas);
-                if (bisagras && bisagras.cantidad > 0 && bisagras.precioUnitario > 0) {
-                    presupuestoActual.push({
-                        categoria: "🔩 HERRAJES",
-                        color: '',
-                        nombre: bisagras.nombre,
-                        medida: "Bisagra Sensys",
-                        cantidad: bisagras.cantidad,
-                        precioUnitario: bisagras.precioUnitario,
-                        total: bisagras.total,
-                        tipo: 'herraje'
-                    });
-                }
-            }
-            
-            const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata);
-            if (patas) {
-                presupuestoActual.push({
-                    categoria: "🔩 HERRAJES",
-                    color: '',
-                    nombre: `${patas.nombre} (4 patas/módulo)`,
-                    medida: patas.nombre,
-                    cantidad: patas.cantidad,
-                    precioUnitario: patas.precioUnitario,
-                    total: patas.total,
-                    tipo: 'herraje'
-                });
-            }
-            
-            const colgador = agregarColgador(articuloSeleccionado, cantidad);
-            if (colgador) {
-                presupuestoActual.push({
-                    categoria: "🔩 HERRAJES",
-                    color: '',
-                    nombre: colgador.nombre,
-                    medida: "1 por módulo",
-                    cantidad: colgador.cantidad,
-                    precioUnitario: colgador.precioUnitario,
-                    total: colgador.total,
-                    tipo: 'herraje'
-                });
-            }
-        }
-        actualizarTabla();
-        inputCantidad.value = 1;
-    });
 
-    btnReset.addEventListener('click', () => { if (confirm('¿Resetear todo?')) { presupuestoActual = []; actualizarTabla(); } });
-    
-    function actualizarTabla() {
-        tablaPresupuesto.innerHTML = '';
-        let subtotal = 0;
-        presupuestoActual.forEach((item, idx) => {
-            subtotal += item.total;
-            let clase = item.tipo === 'modulo' ? 'row-modulo' : (item.tipo === 'puerta' ? 'row-puerta' : 'row-herraje');
-            let colorClass = item.color === '🎨 A ELEGIR, DE ENCARGO' ? 'color-encargo' : '';
-            tablaPresupuesto.innerHTML += `<tr class="${clase} ${colorClass}"><td>${item.categoria}</td><td>${item.color || '-'}</td><td>${item.nombre}</td><td>${item.medida}</td><td>${item.cantidad}</td><td>${item.precioUnitario.toFixed(2)}€</td><td><b>${item.total.toFixed(2)}€</b></td><td><button onclick="eliminarElemento(${idx})" style="background:#e74c3c; padding:6px 12px; width:auto; border-radius:10px;">🗑️</button></td></tr>`;
+            if (esCacerolero) {
+                const altoModulo = articuloSeleccionado.alto_mm;
+                let altoPuerta = (altoModulo / 2) - 2;
+                const anchoPuerta = articuloSeleccionado.ancho_mm - 3;
+                const totalPuertas = 2 * cantidad;
+                let precioPuerta = 0, nombrePuerta = `Puerta ${modeloPuerta} ${Math.round(anchoPuerta)}x${Math.round(altoPuerta)} mm`;
+                for (let p of puertasDB) if ((p.categoria || '').toUpperCase() === modeloPuerta && Math.abs(p.ancho_mm - anchoPuerta) <= 2 && Math.abs(p.alto_mm - altoPuerta) <= 2) { precioPuerta = p.precio_venta; nombrePuerta = p.nombre || nombrePuerta; break; }
+                if (precioPuerta === 0) precioPuerta = 15;
+                if (totalPuertas > 0 && precioPuerta > 0) presupuestoActual.push({ categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`, color: modeloPuerta === 'TAMESIS_COLOR' ? '🎨 A ELEGIR, DE ENCARGO' : articuloSeleccionado.color, nombre: nombrePuerta, medida: `${Math.round(anchoPuerta)}×${Math.round(altoPuerta)} mm`, cantidad: totalPuertas, precioUnitario: precioPuerta, total: totalPuertas * precioPuerta, tipo: 'puerta' });
+                const totalCaceroleros = 2 * cantidad; const precioHerraje = herrajesDB['CACEROLERO'] || 50; if (precioHerraje > 0) presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: "CACEROLERO (herraje)", medida: "por cacerolero", cantidad: totalCaceroleros, precioUnitario: precioHerraje, total: totalCaceroleros * precioHerraje, tipo: 'herraje' });
+                let precioBase = 9; if (basesDB['CACEROLERO'] && basesDB['CACEROLERO'][articuloSeleccionado.ancho_mm]) precioBase = basesDB['CACEROLERO'][articuloSeleccionado.ancho_mm];
+                presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: `BASE CACEROLERO (ancho ${articuloSeleccionado.ancho_mm} mm)`, medida: "2 por módulo", cantidad: totalCaceroleros, precioUnitario: precioBase, total: totalCaceroleros * precioBase, tipo: 'herraje' });
+                const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata); if (patas) presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: `${patas.nombre} (4 patas/módulo)`, medida: patas.nombre, cantidad: patas.cantidad, precioUnitario: patas.precioUnitario, total: patas.total, tipo: 'herraje' });
+            } else {
+                const puerta = calcularPuertas(articuloSeleccionado, cantidad, modeloPuerta);
+                const totalPuertas = puerta.numPuertas * cantidad;
+                const colorDisplay = modeloPuerta === 'TAMESIS_COLOR' ? '🎨 A ELEGIR, DE ENCARGO' : (articuloSeleccionado.color || '');
+                if (totalPuertas > 0 && puerta.precioPuerta > 0) presupuestoActual.push({ categoria: `🚪 PUERTAS (${modeloPuerta === 'TAMESIS_COLOR' ? 'TAMESIS' : modeloPuerta})`, color: colorDisplay, nombre: puerta.nombrePuerta, medida: `${puerta.anchoPuerta}×${puerta.altoPuerta} mm`, cantidad: totalPuertas, precioUnitario: puerta.precioPuerta, total: totalPuertas * puerta.precioPuerta, tipo: 'puerta' });
+                const bisagras = calcularBisagras(puerta, totalPuertas); if (bisagras && bisagras.cantidad > 0 && bisagras.precioUnitario > 0) presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: bisagras.nombre, medida: "Bisagra Sensys", cantidad: bisagras.cantidad, precioUnitario: bisagras.precioUnitario, total: bisagras.total, tipo: 'herraje' });
+                const patas = agregarPatas(articuloSeleccionado, cantidad, tipoPata); if (patas) presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: `${patas.nombre} (4 patas/módulo)`, medida: patas.nombre, cantidad: patas.cantidad, precioUnitario: patas.precioUnitario, total: patas.total, tipo: 'herraje' });
+                const colgador = agregarColgador(articuloSeleccionado, cantidad); if (colgador) presupuestoActual.push({ categoria: "🔩 HERRAJES", color: '', nombre: colgador.nombre, medida: "1 por módulo", cantidad: colgador.cantidad, precioUnitario: colgador.precioUnitario, total: colgador.total, tipo: 'herraje' });
+            }
+            actualizarTabla();
+            inputCantidad.value = 1;
         });
-        const iva = subtotal * (IVA_PORCENTAJE / 100);
-        subtotalSpan.innerText = subtotal.toFixed(2) + ' €';
-        ivaSpan.innerText = iva.toFixed(2) + ' €';
-        totalConIvaSpan.innerText = (subtotal + iva).toFixed(2) + ' €';
-    }
-    
-    window.eliminarElemento = (idx) => { presupuestoActual.splice(idx, 1); actualizarTabla(); };
-    cargarExcel();
-</script>
+
+        btnReset.addEventListener('click', () => { if (confirm('¿Resetear presupuesto?')) { presupuestoActual = []; actualizarTabla(); } });
+
+        function actualizarTabla() {
+            tablaPresupuesto.innerHTML = '';
+            let subtotal = 0;
+            presupuestoActual.forEach((item, idx) => {
+                subtotal += item.total;
+                let clase = item.tipo === 'modulo' ? 'row-modulo' : (item.tipo === 'puerta' ? 'row-puerta' : 'row-herraje');
+                let colorClass = item.color === '🎨 A ELEGIR, DE ENCARGO' ? 'color-encargo' : '';
+                tablaPresupuesto.innerHTML += `<tr class="${clase} ${colorClass}">
+                    <td>${item.categoria}</td><td style="font-size:0.58rem;">${item.color || '-'}</td>
+                    <td>${item.nombre}</td><td style="font-size:0.58rem;">${item.medida}</td>
+                    <td>${item.cantidad}</td><td>${item.precioUnitario.toFixed(2)}€</td>
+                    <td><b>${item.total.toFixed(2)}€</b></td>
+                    <td><button onclick="eliminarElemento(${idx})" style="background:#e2e8f0; border:none; padding:2px 7px; font-size:0.6rem; cursor:pointer;">🗑️</button></td>
+                 </tr>`;
+            });
+            if (presupuestoActual.length === 0) tablaPresupuesto.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:6px;">Añade módulos desde el panel lateral</td></tr>';
+            const iva = subtotal * (IVA_PORCENTAJE / 100);
+            subtotalSpan.innerText = subtotal.toFixed(2) + ' €';
+            ivaSpan.innerText = iva.toFixed(2) + ' €';
+            totalConIvaSpan.innerText = (subtotal + iva).toFixed(2) + ' €';
+        }
+        window.eliminarElemento = (idx) => { presupuestoActual.splice(idx, 1); actualizarTabla(); };
+        cargarExcel();
+    </script>
 </body>
 </html>
